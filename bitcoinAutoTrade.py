@@ -2,9 +2,6 @@ import time
 import pykorbit
 import datetime
 
-access = "your-access"
-secret = "your-secret"
-
 def get_target_price(ticker, k):
     """변동성 돌파 전략으로 매수 목표가 조회"""
     df = pykorbit.get_ohlc(ticker, period=2)
@@ -33,7 +30,9 @@ def get_current_price(ticker):
     return pykorbit.get_orderbook(ticker)["orderbook_units"][0]["ask_price"]
 
 # 로그인
-korbit = pykorbit.Korbit(access, secret)
+key = os.getenv('API_KEY')
+secret = os.getenv('API_SECRET')
+korbit = pykorbit.Korbit(key=key, secret=secret)
 print("autotrade start")
 
 symbol = "BTC"
@@ -45,7 +44,7 @@ while True:
         start_time = get_start_time(symbol)
         end_time = start_time + datetime.timedelta(days=1)
 
-        if start_time < now < end_time - datetime.timedelta(seconds=10):
+        if start_time < now < end_time - datetime.timedelta(seconds=30):
             target_price = get_target_price(symbol, k)
             current_price = get_current_price(symbol)
             if target_price < current_price:
