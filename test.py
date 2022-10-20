@@ -1,7 +1,8 @@
 import pykorbit
+import os
 
-key = "xxxxx"          # 본인 값으로 변경
-secret = "xxxxx"          # 본인 값으로 변경
+key = os.getenv('API_KEY')
+secret = os.getenv('API_SECRET')
 korbit = pykorbit.Korbit(key=key, secret=secret)
 
 balances = korbit.get_balances()
