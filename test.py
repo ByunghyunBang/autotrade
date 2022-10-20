@@ -1,8 +1,10 @@
-import pyupbit
+import pykorbit
 
-access = "your-access"          # 본인 값으로 변경
-secret = "your-secret"          # 본인 값으로 변경
-upbit = pyupbit.Upbit(access, secret)
+key = "xxx"          # 본인 값으로 변경
+secret = "xxx"          # 본인 값으로 변경
+korbit = pykorbit.Korbit(key=key, secret=secret)
 
-print(upbit.get_balance("KRW-BTC"))     # KRW-BTC 조회
-print(upbit.get_balance("KRW"))         # 보유 현금 조회
+balances = korbit.get_balances()
+print(balances)
+print(balances["btc"])         # KRW-BTC 조회
+print(balances["KRW"])         # 보유 현금 조회
