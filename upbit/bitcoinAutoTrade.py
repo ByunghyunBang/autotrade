@@ -67,7 +67,7 @@ while True:
             # 이익실현 시점에 50% 매도
             if (not is_exit) and exit_price < current_price:
                 exit_btc = get_balance("BTC") * 0.5
-                if btc > 0.00008:
+                if exit_btc > 0.00008:
                     log("exit: current_price={}, exit_price={}, exit_btc={}".format(current_price, target_price, exit_btc))
                     upbit.sell_market_order("KRW-BTC", exit_btc)
                     is_exit=True
