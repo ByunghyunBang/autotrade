@@ -41,7 +41,7 @@ def log(msg):
 upbit = pyupbit.Upbit(access, secret)
 log("autotrade start")
 k=0.5
-exit_rate=0.05 # 매수시점대비 몇% 상승시 매도할 것인가 (절반만 매도)
+exit_rate=0.03 # 매수시점대비 몇% 상승시 매도할 것인가 (절반만 매도)
 
 # 자동매매 시작
 is_exit=False
