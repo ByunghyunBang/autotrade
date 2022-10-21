@@ -1,43 +1,47 @@
 import time
 import pykorbit
 import datetime
+import os
 
 def get_target_price(ticker, k):
     """변동성 돌파 전략으로 매수 목표가 조회"""
     df = pykorbit.get_ohlc(ticker, period=2)
-    target_price = df.iloc[0]['close'] + (df.iloc[0]['high'] - df.iloc[0]['low']) * k
+    target_price = df.iloc[1]['close'] + (df.iloc[1]['high'] - df.iloc[1]['low']) * k
     return target_price
 
 def get_start_time(ticker):
     """시작 시간 조회"""
-    df = pykorbit.get_ohlc(ticker, period=1)
-    start_time = df.index[0]
+    df = pykorbit.get_ohlc(ticker, period=2)
+    start_time = df.index[1]
     return start_time
 
 def get_balance(ticker):
     """잔고 조회"""
     balances = korbit.get_balances()
-    for b in balances:
-        if b['currency'] == ticker:
-            if b['balance'] is not None:
-                return float(b['balance'])
-            else:
-                return 0
-    return 0
+    balance = balances[ticker]
+    if balance is not None:
+        return float(balance['available'])
+    else:
+        return 0
 
 def get_current_price(ticker):
     """현재가 조회"""
-    return pykorbit.get_orderbook(ticker)["orderbook_units"][0]["ask_price"]
+    current_price = pykorbit.get_orderbook(ticker)["asks"][0][0]
+    if current_price is not None:
+        return float(current_price)
+    else:
+        return 0
 
 # 로그인
 key = os.getenv('API_KEY')
 secret = os.getenv('API_SECRET')
 korbit = pykorbit.Korbit(key=key, secret=secret)
-print("autotrade start")
 
-symbol = "BTC"
+symbol = "btc"
 k = 0.5
+
 # 자동매매 시작
+print("autotrade start")
 while True:
     try:
         now = datetime.datetime.now()
@@ -48,12 +52,12 @@ while True:
             target_price = get_target_price(symbol, k)
             current_price = get_current_price(symbol)
             if target_price < current_price:
-                krw = get_balance("KRW")
+                krw = get_balance("krw")
                 if krw > 5000:
                     #korbit.buy_market_order(symbol, krw*0.998)
                     print("매수")
         else:
-            btc = get_balance("BTC")
+            btc = get_balance(symbol)
             if btc > 0.00008:
                 #korbit.sell_market_order(symbol, btc*0.998)
                 print("매도")
