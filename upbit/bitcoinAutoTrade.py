@@ -41,7 +41,10 @@ def log(msg):
 upbit = pyupbit.Upbit(access, secret)
 log("autotrade start")
 k=0.5
+exit_rate=0.05 # 매수시점대비 몇% 상승시 매도할 것인가 (절반만 매도)
+
 # 자동매매 시작
+is_exit=False
 while True:
     try:
         now = datetime.datetime.now()
@@ -51,16 +54,28 @@ while True:
         if start_time < now < end_time - datetime.timedelta(seconds=10):
             target_price = get_target_price("KRW-BTC", k)
             current_price = get_current_price("KRW-BTC")
+            exit_price = target_price * (1 + exit_rate)
+
+            # 변동성 돌파 시점에 매수
             if target_price < current_price:
                 krw = get_balance("KRW")
                 if krw > 5000:
-                    log("buy: krw={}".format(krw))
+                    log("buy: current_price={}, target_price={}, krw={}".format(current_price, target_price, krw))
                     upbit.buy_market_order("KRW-BTC", krw*0.9995)
+
+            # 이익실현 시점에 50% 매도
+            if (not is_exit) and exit_price < current_price:
+            exit_btc = get_balance("BTC") * 0.5
+            if btc > 0.00008:
+                log("exit: current_price={}, exit_price={}, exit_btc={}".format(current_price, target_price, exit_btc))
+                upbit.sell_market_order("KRW-BTC", exit_btc)
+                is_exit=True
         else:
             btc = get_balance("BTC")
             if btc > 0.00008:
                 log("sell: btc={}".format(btc))
                 upbit.sell_market_order("KRW-BTC", btc*0.9995)
+            is_exit=False
         time.sleep(1)
     except Exception as e:
         log(e)
