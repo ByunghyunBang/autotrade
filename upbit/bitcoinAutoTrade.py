@@ -1,6 +1,7 @@
 import time
 import pyupbit
 import datetime
+import os
 
 access = os.getenv('UPBIT_ACCESS')
 secret = os.getenv('UPBIT_SECRET')
@@ -32,10 +33,14 @@ def get_current_price(ticker):
     """현재가 조회"""
     return pyupbit.get_orderbook(ticker=ticker)["orderbook_units"][0]["ask_price"]
 
+def log(msg):
+    now = datetime.datetime.now()
+    print(now, msg)
+
 # 로그인
 upbit = pyupbit.Upbit(access, secret)
-print("autotrade start")
-
+log("autotrade start")
+k=0.5
 # 자동매매 시작
 while True:
     try:
@@ -44,15 +49,17 @@ while True:
         end_time = start_time + datetime.timedelta(days=1)
 
         if start_time < now < end_time - datetime.timedelta(seconds=10):
-            target_price = get_target_price("KRW-BTC", 0.5)
+            target_price = get_target_price("KRW-BTC", k)
             current_price = get_current_price("KRW-BTC")
             if target_price < current_price:
                 krw = get_balance("KRW")
                 if krw > 5000:
+                    log("buy: krw={}".format(krw))
                     upbit.buy_market_order("KRW-BTC", krw*0.9995)
         else:
             btc = get_balance("BTC")
             if btc > 0.00008:
+                log("sell: btc={}".format(btc))
                 upbit.sell_market_order("KRW-BTC", btc*0.9995)
         time.sleep(1)
     except Exception as e:

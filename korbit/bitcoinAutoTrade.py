@@ -35,6 +35,7 @@ def get_current_price(ticker):
 def log(msg):
     now = datetime.datetime.now()
     print(now, msg)
+
 # 로그인
 key = os.getenv('API_KEY')
 secret = os.getenv('API_SECRET')
