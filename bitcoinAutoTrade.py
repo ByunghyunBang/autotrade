@@ -32,6 +32,9 @@ def get_current_price(ticker):
     else:
         return 0
 
+def log(msg):
+    now = datetime.datetime.now()
+    print(now, msg)
 # 로그인
 key = os.getenv('API_KEY')
 secret = os.getenv('API_SECRET')
@@ -41,7 +44,7 @@ symbol = "btc"
 k = 0.5
 
 # 자동매매 시작
-print("autotrade start")
+log("autotrade start")
 while True:
     try:
         now = datetime.datetime.now()
@@ -55,13 +58,13 @@ while True:
                 krw = get_balance("krw")
                 if krw > 5000:
                     #korbit.buy_market_order(symbol, krw*0.998)
-                    print("매수")
+                    log("매수")
         else:
             btc = get_balance(symbol)
             if btc > 0.00008:
                 #korbit.sell_market_order(symbol, btc*0.998)
-                print("매도")
+                log("매도")
         time.sleep(5)
     except Exception as e:
-        print(e)
+        log(e)
         time.sleep(5)
