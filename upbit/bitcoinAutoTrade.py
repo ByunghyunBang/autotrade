@@ -55,7 +55,7 @@ while True:
             target_price = get_target_price("KRW-BTC", k)
             current_price = get_current_price("KRW-BTC")
             exit_price = target_price * (1 + exit_rate)
-            log("current_price:",current_price)
+            log("current_price:{}".format(current_price))
 
             # 변동성 돌파 시점에 매수
             if target_price < current_price:
