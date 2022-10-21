@@ -73,7 +73,7 @@ while True:
         else:
             btc = get_balance("BTC")
             if btc > 0.00008:
-                log("sell: btc={}".format(btc))
+                log("sell: current_price={}, btc={}".format(current_price, btc))
                 upbit.sell_market_order("KRW-BTC", btc*0.9995)
             is_exit=False
         time.sleep(5)
