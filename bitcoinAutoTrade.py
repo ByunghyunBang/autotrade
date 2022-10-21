@@ -55,15 +55,15 @@ while True:
             target_price = get_target_price(symbol, k)
             current_price = get_current_price(symbol)
             if target_price < current_price:
-                krw = get_balance("krw")
+                krw = int(get_balance("krw"))
                 if krw > 5000:
-                    #korbit.buy_market_order(symbol, krw*0.998)
-                    log("매수")
+                    order=korbit.buy_market_order(symbol, krw)
+                    log("매수결과 : symbol={}, krw={}, result={}".format(symbol,krw,order))
         else:
             btc = get_balance(symbol)
-            if btc > 0.00008:
-                #korbit.sell_market_order(symbol, btc*0.998)
-                log("매도")
+            if btc > 0.0001:
+                order=korbit.sell_market_order(symbol, btc)
+                log("매도결과 : symbol={}, btc={}, result={}".format(symbol,btc,order))
         time.sleep(5)
     except Exception as e:
         log(e)
