@@ -1,7 +1,9 @@
 import pyupbit
+import os
 
-access = "your-access"          # 본인 값으로 변경
-secret = "your-secret"          # 본인 값으로 변경
+access = os.getenv('UPBIT_ACCESS')
+secret = os.getenv('UPBIT_SECRET')
+
 upbit = pyupbit.Upbit(access, secret)
 
 print(upbit.get_balance("KRW-BTC"))     # KRW-BTC 조회
