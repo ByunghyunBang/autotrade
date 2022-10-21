@@ -63,5 +63,5 @@ while True:
                 upbit.sell_market_order("KRW-BTC", btc*0.9995)
         time.sleep(1)
     except Exception as e:
-        print(e)
+        log(e)
         time.sleep(1)
