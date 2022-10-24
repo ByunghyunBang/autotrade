@@ -72,14 +72,14 @@ while True:
                 )
 
             # 변동성 돌파 시점에 매수
-            if target_price < current_price2:
+            if current_price > target_price2:
                 krw = get_balance("KRW")
                 if krw > 5000:
                     log("buy: current_price={}, target_price2={}, krw={}".format(current_price, target_price2, krw))
                     # upbit.buy_market_order("KRW-BTC", krw*0.9995)
 
             # 기대이익실현 시점에 50% 매도
-            if (not is_exit) and exit_price < current_price:
+            if (not is_exit) and current_price > exit_price:
                 exit_btc = get_balance("BTC") * 0.5
                 if exit_btc > 0.00008:
                     log("exit: current_price={}, exit_price={}, exit_btc={}".format(current_price, target_price, exit_btc))
