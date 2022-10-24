@@ -15,7 +15,6 @@ def get_target_price(ohlcv_day2, k):
 def get_target_price2(ohlcv_day2, k):
     """변동성 돌파 전략으로 매수 목표가 조회 (어제 종가 아닌 오늘 최저가 기준으로 매수 목표 설정)"""
     df = ohlcv_day2
-    print(df)
     today_low = df.iloc[1]['low']
     target_price = today_low + (df.iloc[0]['high'] - df.iloc[0]['low']) * k
     return target_price
