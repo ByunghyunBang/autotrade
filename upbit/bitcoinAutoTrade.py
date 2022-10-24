@@ -6,10 +6,18 @@ import os
 access = os.getenv('UPBIT_ACCESS')
 secret = os.getenv('UPBIT_SECRET')
 
-def get_target_price(ticker, k):
+def get_target_price(ohlcv_day2, k):
     """변동성 돌파 전략으로 매수 목표가 조회"""
-    df = pyupbit.get_ohlcv(ticker, interval="day", count=2)
+    df = ohlcv_day2
     target_price = df.iloc[0]['close'] + (df.iloc[0]['high'] - df.iloc[0]['low']) * k
+    return target_price
+
+def get_target_price2(ohlcv_day2, k):
+    """변동성 돌파 전략으로 매수 목표가 조회 (어제 종가 아닌 오늘 최저가 기준으로 매수 목표 설정)"""
+    df = ohlcv_day2
+    print(df)
+    today_low = df.iloc[1]['low']
+    target_price = today_low + (df.iloc[0]['high'] - df.iloc[0]['low']) * k
     return target_price
 
 def get_start_time(ticker):
@@ -40,6 +48,7 @@ def log(msg):
 # 로그인
 upbit = pyupbit.Upbit(access, secret)
 log("autotrade start")
+ticker="KRW-BTC"
 k=0.5
 exit_rate=0.03 # 매수시점대비 몇% 상승시 매도할 것인가 (절반만 매도)
 
@@ -52,30 +61,36 @@ while True:
         end_time = start_time + datetime.timedelta(days=1)
 
         if start_time < now < end_time - datetime.timedelta(seconds=10):
-            target_price = get_target_price("KRW-BTC", k)
+            ohlcv_day2 = pyupbit.get_ohlcv(ticker, interval="day", count=2)
+            target_price = get_target_price(ohlcv_day2, k)
+            target_price2 = get_target_price2(ohlcv_day2, k)
             current_price = get_current_price("KRW-BTC")
             exit_price = target_price * (1 + exit_rate)
-            log("current_price={},target_price={},exit_price={}".format(current_price,target_price,exit_price))
+            log(
+                "(no-event) current_price={},target_price={},target_price2={},exit_price={}"
+                .format(current_price,target_price,target_price2,exit_price)
+                )
 
             # 변동성 돌파 시점에 매수
-            if target_price < current_price:
+            if target_price < current_price2:
                 krw = get_balance("KRW")
                 if krw > 5000:
-                    log("buy: current_price={}, target_price={}, krw={}".format(current_price, target_price, krw))
-                    upbit.buy_market_order("KRW-BTC", krw*0.9995)
+                    log("buy: current_price={}, target_price2={}, krw={}".format(current_price, target_price2, krw))
+                    # upbit.buy_market_order("KRW-BTC", krw*0.9995)
 
-            # 이익실현 시점에 50% 매도
+            # 기대이익실현 시점에 50% 매도
             if (not is_exit) and exit_price < current_price:
                 exit_btc = get_balance("BTC") * 0.5
                 if exit_btc > 0.00008:
                     log("exit: current_price={}, exit_price={}, exit_btc={}".format(current_price, target_price, exit_btc))
-                    upbit.sell_market_order("KRW-BTC", exit_btc)
+                    # upbit.sell_market_order("KRW-BTC", exit_btc)
                     is_exit=True
         else:
+            # 일일 종료 시점에 전량매도
             btc = get_balance("BTC")
             if btc > 0.00008:
                 log("sell: current_price={}, btc={}".format(current_price, btc))
-                upbit.sell_market_order("KRW-BTC", btc*0.9995)
+                upbit.sell_market_order("KRW-BTC", btc)
             is_exit=False
         time.sleep(5)
     except Exception as e:
