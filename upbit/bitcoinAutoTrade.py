@@ -112,20 +112,20 @@ while True:
 
             # 손절 : 지정된 손절시점에서 전량매도
             if (current_price < emergency_sell_price):
-                btc = get_balance(symbol)
-                if btc > 0.00008:
-                    log("emergency sell: trading was frozen: current_price={}, btc={}".format(current_price, btc))
+                crypto = get_balance(symbol)
+                if crypto > 0.00008:
+                    log("emergency sell: trading was frozen: current_price={}, crypto={}".format(current_price, crypto))
                     if trading_enabled:
-                        upbit.sell_market_order(market, btc)
+                        upbit.sell_market_order(market, crypto)
                     set_freeze(now)
 
         else:
             # 일일 종료 시점에 전량매도
-            btc = get_balance(symbol)
-            if btc > 0.00008:
-                log("sell: current_price={}, btc={}".format(current_price, btc))
+            crypto = get_balance(symbol)
+            if crypto > 0.00008:
+                log("sell: current_price={}, crypto={}".format(current_price, crypto))
                 if trading_enabled:
-                    upbit.sell_market_order(market, btc)
+                    upbit.sell_market_order(market, crypto)
             
             # 현재 잔액 로그
             krw = get_balance("KRW")
