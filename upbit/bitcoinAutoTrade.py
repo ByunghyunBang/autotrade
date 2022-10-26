@@ -57,8 +57,8 @@ def set_freeze(now):
     frozen_time=now
 
 # 각종 설정
-trading_enabled=False
-symbol="ETH"
+trading_enabled=True
+symbol="BTC"
 market="KRW-{}".format(symbol)
 k=0.5
 expected_rate=0.03 # 매수시점대비 몇% 상승시 매도할 것인가 (절반만 매도)
