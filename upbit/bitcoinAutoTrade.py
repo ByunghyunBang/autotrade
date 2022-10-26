@@ -59,7 +59,7 @@ def set_freeze(now):
 # 각종 설정
 trading_enabled=True
 symbol="BTC"
-market="KRW-BTC"
+market="KRW-{}".format(symbol)
 k=0.5
 expected_rate=0.03 # 매수시점대비 몇% 상승시 매도할 것인가 (절반만 매도)
 panic_sell_rate=0.008 # 하락시 손절시점 설정
