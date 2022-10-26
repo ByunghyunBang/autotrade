@@ -39,14 +39,16 @@ def log(msg):
     print(now, msg)
 
 def clear_flags():
+    global meet_expected_rate, emergency_sell, is_frozen, frozen_time
     meet_expected_rate=False
     emergency_sell=False
-    is_freezed=False
-    freezed_time=time.time()
+    is_frozen=False
+    frozen_time=time.time()
 
 def set_freeze(now):
-    is_freezed=True
-    freezed_time=now
+    global is_frozen, frozen_time
+    is_frozen=True
+    frozen_time=now
 
 # 로그인
 upbit = pyupbit.Upbit(access, secret)
@@ -57,10 +59,7 @@ expected_rate=0.03 # 매수시점대비 몇% 상승시 매도할 것인가 (절�
 panic_sell_rate=0.008 # 하락시 손절시점 설정
 
 # 자동매매 시작
-meet_expected_rate=False
-emergency_sell=False
-is_frozen=False
-freezed_time=time.time()
+clear_flags()
 
 while True:
     try:
@@ -105,7 +104,7 @@ while True:
             if (current_price < emergency_sell_price):
                 btc = get_balance("BTC")
                 if btc > 0.00008:
-                    log("emergency sell: trading was freezed: current_price={}, btc={}".format(current_price, btc))
+                    log("emergency sell: trading was frozen: current_price={}, btc={}".format(current_price, btc))
                     if trading_enabled:
                         upbit.sell_market_order("KRW-BTC", btc)
                     set_freeze(now)
