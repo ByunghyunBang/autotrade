@@ -3,7 +3,6 @@ import pyupbit
 import datetime
 import os
 
-trading_enabled=True
 access = os.getenv('UPBIT_ACCESS')
 secret = os.getenv('UPBIT_SECRET')
 
@@ -28,7 +27,11 @@ def get_start_time(ticker):
 
 def get_balance(ticker):
     """잔고 조회"""
-    return upbit.get_balance(ticker)
+    balance = upbit.get_balance(ticker)
+    if balance is not None:
+        return balance
+    else:
+        return 0
 
 def get_current_price(ticker):
     """현재가 조회"""
@@ -50,13 +53,16 @@ def set_freeze(now):
     is_frozen=True
     frozen_time=now
 
-# 로그인
-upbit = pyupbit.Upbit(access, secret)
-log("autotrade start")
+# 각종 설정
+trading_enabled=True
 ticker="KRW-BTC"
 k=0.5
 expected_rate=0.03 # 매수시점대비 몇% 상승시 매도할 것인가 (절반만 매도)
 panic_sell_rate=0.008 # 하락시 손절시점 설정
+
+# 로그인
+upbit = pyupbit.Upbit(access, secret)
+log("autotrade start")
 
 # 자동매매 시작
 clear_flags()
@@ -71,7 +77,7 @@ while True:
             ohlcv_day2 = pyupbit.get_ohlcv(ticker, interval="day", count=2)
             target_price = get_target_price(ohlcv_day2, k)
             target_price2 = get_target_price2(ohlcv_day2, k)
-            current_price = get_current_price("KRW-BTC")
+            current_price = get_current_price(ticker)
             expected_rate_price = target_price * (1 + expected_rate)
             emergency_sell_price = target_price2 * (1 - panic_sell_rate)
             log(
@@ -89,7 +95,7 @@ while True:
                 if krw > 5000:
                     log("buy: current_price={}, target_price2={}, krw={}".format(current_price, target_price2, krw))
                     if trading_enabled:
-                        upbit.buy_market_order("KRW-BTC", krw*0.9995)
+                        upbit.buy_market_order(ticker, krw*0.9995)
 
             # 기대이익실현 시점에 50% 매도
             if (not meet_expected_rate) and current_price > expected_rate_price:
@@ -97,7 +103,7 @@ while True:
                 if half_btc > 0.00008:
                     log("exit: current_price={}, expected_rate_price={}, half_btc={}".format(current_price, expected_rate_price, half_btc))
                     if trading_enabled:
-                        upbit.sell_market_order("KRW-BTC", half_btc)
+                        upbit.sell_market_order(ticker, half_btc)
                     meet_expected_rate=True
 
             # 손절 : 지정된 손절시점에서 전량매도
@@ -106,7 +112,7 @@ while True:
                 if btc > 0.00008:
                     log("emergency sell: trading was frozen: current_price={}, btc={}".format(current_price, btc))
                     if trading_enabled:
-                        upbit.sell_market_order("KRW-BTC", btc)
+                        upbit.sell_market_order(ticker, btc)
                     set_freeze(now)
 
         else:
@@ -115,7 +121,7 @@ while True:
             if btc > 0.00008:
                 log("sell: current_price={}, btc={}".format(current_price, btc))
                 if trading_enabled:
-                    upbit.sell_market_order("KRW-BTC", btc)
+                    upbit.sell_market_order(ticker, btc)
             
             # 현재 잔액 로그
             krw = get_balance("KRW")
@@ -124,4 +130,5 @@ while True:
         time.sleep(5)
     except Exception as e:
         log(e)
+        e.__traceback__.print_exc()
         time.sleep(5)
