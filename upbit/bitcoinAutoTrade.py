@@ -74,7 +74,7 @@ while True:
             target_price2 = get_target_price2(ohlcv_day2, k)
             current_price = get_current_price("KRW-BTC")
             expected_rate_price = target_price * (1 + expected_rate)
-            emergency_sell_price = target_price2 * (1-panic_sell_rate)
+            emergency_sell_price = target_price2 * (1 - panic_sell_rate)
             log(
                 "(no-event) current_price={},target_price={},target_price2={},expected_rate_price={},is_freezed={}"
                 .format(current_price,target_price,target_price2,expected_rate_price,is_freezed)
@@ -101,7 +101,7 @@ while True:
                         upbit.sell_market_order("KRW-BTC", half_btc)
                     meet_expected_rate=True
 
-            # 손절 : 매수시점보다 -0.1% 하락 시점에서 손절
+            # 손절 : 지정된 손절시점에서 전량매도
             if (current_price < emergency_sell_price):
                 btc = get_balance("BTC")
                 if btc > 0.00008:
