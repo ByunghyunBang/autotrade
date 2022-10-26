@@ -57,7 +57,7 @@ def set_freeze(now):
     frozen_time=now
 
 # 각종 설정
-trading_enabled=True
+trading_enabled=False
 symbol="BTC"
 market="KRW-BTC"
 k=0.5
@@ -103,11 +103,11 @@ while True:
 
             # 기대이익실현 시점에 50% 매도
             if (not meet_expected_rate) and current_price > expected_rate_price:
-                half_btc = get_balance(symbol) * 0.5
-                if half_btc > 0.00008:
-                    log("exit: current_price={}, expected_rate_price={}, half_btc={}".format(current_price, expected_rate_price, half_btc))
+                half_crypto = get_balance(symbol) * 0.5
+                if half_crypto > 0.00008:
+                    log("exit: current_price={}, expected_rate_price={}, half_crypto={}".format(current_price, expected_rate_price, half_crypto))
                     if trading_enabled:
-                        upbit.sell_market_order(market, half_btc)
+                        upbit.sell_market_order(market, half_crypto)
                     meet_expected_rate=True
 
             # 손절 : 지정된 손절시점에서 전량매도
