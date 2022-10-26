@@ -19,6 +19,10 @@ def get_target_price2(ohlcv_day2, k):
     target_price = today_low + (df.iloc[0]['high'] - df.iloc[0]['low']) * k
     return target_price
 
+def get_today_open(ohlcv_day2):
+    df = ohlcv_day2
+    return df.iloc[1]['open']
+
 def get_start_time(market):
     """시작 시간 조회"""
     df = pyupbit.get_ohlcv(market, interval="day", count=1)
@@ -79,14 +83,15 @@ while True:
 
         if start_time < now < end_time - datetime.timedelta(seconds=10):
             ohlcv_day2 = pyupbit.get_ohlcv(market, interval="day", count=2)
+            today_open = get_today_open(ohlcv_day2)
             # target_price = get_target_price(ohlcv_day2, k)
             target_price = get_target_price2(ohlcv_day2, k)
             current_price = get_current_price(market)
             expected_price = target_price * (1 + expected_rate)
             emergency_sell_price = target_price * (1 - panic_sell_rate)
             log(
-                "(no-event) market={},current_price={},target_price={},expected_price={},emergency_sell_price={},is_frozen={}"
-                .format(market,current_price, target_price, expected_price, emergency_sell_price, is_frozen)
+                "(no-event) market={},current_price={},target_price={},expected_price={},emergency_sell_price={},today_open={},is_frozen={}"
+                .format(market,current_price, target_price, expected_price, emergency_sell_price, today_open, is_frozen)
                 )
 
             # Freeze 상태이면 거래하지 않음
@@ -111,7 +116,7 @@ while True:
                     meet_expected_price=True
 
             # 손절 : 지정된 손절시점에서 전량매도
-            if (current_price < emergency_sell_price):
+            if (current_price < emergency_sell_price and current_price < today_open):
                 crypto = get_balance(symbol)
                 if crypto > 0.00008:
                     log("emergency sell: current_price={}, crypto={}".format(current_price, crypto))
