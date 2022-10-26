@@ -85,8 +85,8 @@ while True:
             expected_price = target_price * (1 + expected_rate)
             emergency_sell_price = target_price * (1 - panic_sell_rate)
             log(
-                "(no-event) current_price={},target_price={},expected_price={},emergency_sell_price={},is_frozen={}"
-                .format(current_price, target_price, expected_price, emergency_sell_price, is_frozen)
+                "(no-event) market={},current_price={},target_price={},expected_price={},emergency_sell_price={},is_frozen={}"
+                .format(market,current_price, target_price, expected_price, emergency_sell_price, is_frozen)
                 )
 
             # Freeze 상태이면 거래하지 않음
