@@ -117,6 +117,10 @@ while True:
                 log("sell: current_price={}, btc={}".format(current_price, btc))
                 if trading_enabled:
                     upbit.sell_market_order("KRW-BTC", btc)
+            
+            # 현재 잔액 로그
+            krw = get_balance("KRW")
+            log("Closing balance={}".format(krw))
             clear_flags()
         time.sleep(5)
     except Exception as e:
