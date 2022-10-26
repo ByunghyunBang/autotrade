@@ -57,8 +57,8 @@ def set_freeze(now):
     frozen_time=now
 
 # 각종 설정
-trading_enabled=True
-symbol="BTC"
+trading_enabled=False
+symbol="ETH"
 market="KRW-{}".format(symbol)
 k=0.5
 expected_rate=0.03 # 매수시점대비 몇% 상승시 매도할 것인가 (절반만 매도)
@@ -114,10 +114,10 @@ while True:
             if (current_price < emergency_sell_price):
                 crypto = get_balance(symbol)
                 if crypto > 0.00008:
-                    log("emergency sell: trading was frozen: current_price={}, crypto={}".format(current_price, crypto))
+                    log("emergency sell: current_price={}, crypto={}".format(current_price, crypto))
                     if trading_enabled:
                         upbit.sell_market_order(market, crypto)
-                    set_freeze(now)
+                    # set_freeze(now)
 
         else:
             # 일일 종료 시점에 전량매도
