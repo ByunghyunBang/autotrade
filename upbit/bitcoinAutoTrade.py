@@ -27,14 +27,7 @@ def get_start_time(ticker):
 
 def get_balance(ticker):
     """잔고 조회"""
-    balances = upbit.get_balances()
-    for b in balances:
-        if b['currency'] == ticker:
-            if b['balance'] is not None:
-                return float(b['balance'])
-            else:
-                return 0
-    return 0
+    return upbit.get_balance(ticker)
 
 def get_current_price(ticker):
     """현재가 조회"""
@@ -68,6 +61,7 @@ while True:
             target_price2 = get_target_price2(ohlcv_day2, k)
             current_price = get_current_price("KRW-BTC")
             expected_rate_price = target_price * (1 + expected_rate)
+            break_price = target_price2 * 0.999
             log(
                 "(no-event) current_price={},target_price={},target_price2={},expected_rate_price={}"
                 .format(current_price,target_price,target_price2,expected_rate_price)
@@ -87,6 +81,14 @@ while True:
                     log("exit: current_price={}, expected_rate_price={}, half_btc={}".format(current_price, expected_rate_price, half_btc))
                     upbit.sell_market_order("KRW-BTC", half_btc)
                     meet_expected_rate=True
+
+            # 손절 : 매수시점보다 -0.1% 하락 시점에서 손절
+            if (current_price < break_price):
+                btc = get_balance("BTC")
+                if btc > 0.00008:
+                    log("emergency sell: current_price={}, btc={}".format(current_price, btc))
+                    upbit.sell_market_order("KRW-BTC", btc)
+
         else:
             # 일일 종료 시점에 전량매도
             btc = get_balance("BTC")
