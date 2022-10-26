@@ -66,7 +66,7 @@ symbol="BTC"
 market="KRW-{}".format(symbol)
 k=0.5
 expected_rate=0.03 # 매수시점대비 몇% 상승시 매도할 것인가 (절반만 매도)
-panic_sell_rate=0.008 # 하락시 손절시점 설정
+emergency_sell_rate=0.008 # 하락시 손절시점 설정
 
 # 로그인
 upbit = pyupbit.Upbit(access, secret)
@@ -88,7 +88,7 @@ while True:
             target_price = get_target_price2(ohlcv_day2, k)
             current_price = get_current_price(market)
             expected_price = target_price * (1 + expected_rate)
-            emergency_sell_price = target_price * (1 - panic_sell_rate)
+            emergency_sell_price = target_price * (1 - emergency_sell_rate)
             log(
                 "(no-event) market={},current_price={},target_price={},expected_price={},emergency_sell_price={},today_open={},is_frozen={}"
                 .format(market,current_price, target_price, expected_price, emergency_sell_price, today_open, is_frozen)
