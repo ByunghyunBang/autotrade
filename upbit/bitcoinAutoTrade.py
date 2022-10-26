@@ -67,10 +67,10 @@ while True:
             target_price = get_target_price(ohlcv_day2, k)
             target_price2 = get_target_price2(ohlcv_day2, k)
             current_price = get_current_price("KRW-BTC")
-            exit_price = target_price * (1 + expected_rate)
+            expected_rate_price = target_price * (1 + expected_rate)
             log(
-                "(no-event) current_price={},target_price={},target_price2={},exit_price={}"
-                .format(current_price,target_price,target_price2,exit_price)
+                "(no-event) current_price={},target_price={},target_price2={},expected_rate_price={}"
+                .format(current_price,target_price,target_price2,expected_rate_price)
                 )
 
             # 변동성 돌파 시점에 매수
@@ -81,11 +81,11 @@ while True:
                     upbit.buy_market_order("KRW-BTC", krw*0.9995)
 
             # 기대이익실현 시점에 50% 매도
-            if (not meet_expected_rate) and current_price > exit_price:
-                exit_btc = get_balance("BTC") * 0.5
-                if exit_btc > 0.00008:
-                    log("exit: current_price={}, exit_price={}, exit_btc={}".format(current_price, target_price, exit_btc))
-                    upbit.sell_market_order("KRW-BTC", exit_btc)
+            if (not meet_expected_rate) and current_price > expected_rate_price:
+                half_btc = get_balance("BTC") * 0.5
+                if half_btc > 0.00008:
+                    log("exit: current_price={}, expected_rate_price={}, half_btc={}".format(current_price, expected_rate_price, half_btc))
+                    upbit.sell_market_order("KRW-BTC", half_btc)
                     meet_expected_rate=True
         else:
             # 일일 종료 시점에 전량매도
