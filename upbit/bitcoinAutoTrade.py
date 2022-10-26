@@ -59,7 +59,7 @@ panic_sell_rate=0.008 # 하락시 손절시점 설정
 # 자동매매 시작
 meet_expected_rate=False
 emergency_sell=False
-is_freezed=False
+is_frozen=False
 freezed_time=time.time()
 
 while True:
@@ -76,12 +76,12 @@ while True:
             expected_rate_price = target_price * (1 + expected_rate)
             emergency_sell_price = target_price2 * (1 - panic_sell_rate)
             log(
-                "(no-event) current_price={},target_price={},target_price2={},expected_rate_price={},is_freezed={}"
-                .format(current_price,target_price,target_price2,expected_rate_price,is_freezed)
+                "(no-event) current_price={},target_price={},target_price2={},expected_rate_price={},is_frozen={}"
+                .format(current_price,target_price,target_price2,expected_rate_price,is_frozen)
                 )
 
             # Freeze 상태이면 거래하지 않음
-            if is_freezed:
+            if is_frozen:
                 continue
 
             # 변동성 돌파 시점에 매수
