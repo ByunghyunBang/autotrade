@@ -57,7 +57,7 @@ def set_freeze(now):
     frozen_time=now
 
 # 각종 설정
-trading_enabled=False
+trading_enabled=True
 symbol="BTC"
 market="KRW-BTC"
 k=0.5
@@ -79,14 +79,14 @@ while True:
 
         if start_time < now < end_time - datetime.timedelta(seconds=10):
             ohlcv_day2 = pyupbit.get_ohlcv(market, interval="day", count=2)
-            target_price = get_target_price(ohlcv_day2, k)
-            target_price2 = get_target_price2(ohlcv_day2, k)
+            # target_price = get_target_price(ohlcv_day2, k)
+            target_price = get_target_price2(ohlcv_day2, k)
             current_price = get_current_price(market)
-            expected_rate_price = target_price * (1 + expected_rate)
-            emergency_sell_price = target_price2 * (1 - panic_sell_rate)
+            expected_price = target_price * (1 + expected_rate)
+            emergency_sell_price = target_price * (1 - panic_sell_rate)
             log(
-                "(no-event) current_price={},target_price={},target_price2={},expected_rate_price={},is_frozen={}"
-                .format(current_price,target_price,target_price2,expected_rate_price,is_frozen)
+                "(no-event) current_price={},target_price={},expected_price={},emergency_sell_price={},is_frozen={}"
+                .format(current_price, target_price, expected_price, emergency_sell_price, is_frozen)
                 )
 
             # Freeze 상태이면 거래하지 않음
@@ -94,18 +94,18 @@ while True:
                 continue
 
             # 변동성 돌파 시점에 매수
-            if current_price > target_price2:
+            if (not meet_expected_rate) and (current_price > target_price):
                 krw = get_balance("KRW")
                 if krw > 5000:
-                    log("buy: current_price={}, target_price2={}, krw={}".format(current_price, target_price2, krw))
+                    log("buy: current_price={}, target_price={}, krw={}".format(current_price, target_price, krw))
                     if trading_enabled:
                         upbit.buy_market_order(market, krw*0.9995)
 
             # 기대이익실현 시점에 50% 매도
-            if (not meet_expected_rate) and current_price > expected_rate_price:
+            if (not meet_expected_rate) and (current_price > expected_price):
                 half_crypto = get_balance(symbol) * 0.5
                 if half_crypto > 0.00008:
-                    log("exit: current_price={}, expected_rate_price={}, half_crypto={}".format(current_price, expected_rate_price, half_crypto))
+                    log("exit: current_price={}, expected_price={}, half_crypto={}".format(current_price, expected_price, half_crypto))
                     if trading_enabled:
                         upbit.sell_market_order(market, half_crypto)
                     meet_expected_rate=True
