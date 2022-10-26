@@ -87,14 +87,14 @@ while True:
                 krw = get_balance("KRW")
                 if krw > 5000:
                     log("buy: current_price={}, target_price2={}, krw={}".format(current_price, target_price2, krw))
-                    #upbit.buy_market_order("KRW-BTC", krw*0.9995)
+                    upbit.buy_market_order("KRW-BTC", krw*0.9995)
 
             # 기대이익실현 시점에 50% 매도
             if (not meet_expected_rate) and current_price > expected_rate_price:
                 half_btc = get_balance("BTC") * 0.5
                 if half_btc > 0.00008:
                     log("exit: current_price={}, expected_rate_price={}, half_btc={}".format(current_price, expected_rate_price, half_btc))
-                    #upbit.sell_market_order("KRW-BTC", half_btc)
+                    upbit.sell_market_order("KRW-BTC", half_btc)
                     meet_expected_rate=True
 
             # 손절 : 매수시점보다 -0.1% 하락 시점에서 손절
@@ -102,7 +102,7 @@ while True:
                 btc = get_balance("BTC")
                 if btc > 0.00008:
                     log("emergency sell: trading was freezed: current_price={}, btc={}".format(current_price, btc))
-                    #upbit.sell_market_order("KRW-BTC", btc)
+                    upbit.sell_market_order("KRW-BTC", btc)
                     set_freeze(now)
 
 
@@ -111,7 +111,7 @@ while True:
             btc = get_balance("BTC")
             if btc > 0.00008:
                 log("sell: current_price={}, btc={}".format(current_price, btc))
-                #upbit.sell_market_order("KRW-BTC", btc)
+                upbit.sell_market_order("KRW-BTC", btc)
             clear_flags()
         time.sleep(5)
     except Exception as e:
