@@ -2,6 +2,7 @@ import time
 import pyupbit
 import datetime
 import os
+import traceback
 
 access = os.getenv('UPBIT_ACCESS')
 secret = os.getenv('UPBIT_SECRET')
@@ -144,4 +145,5 @@ while True:
         time.sleep(10)
     except Exception as e:
         log(e)
+        traceback.print_exec()
         time.sleep(10)
