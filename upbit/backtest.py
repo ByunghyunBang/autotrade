@@ -1,11 +1,14 @@
 import pyupbit
 import numpy as np
 
+k = 0.5
+market = "KRW-BTC"
+
 # OHLCV(open, high, low, close, volume)로 당일 시가, 고가, 저가, 종가, 거래량에 대한 데이터
-df = pyupbit.get_ohlcv("KRW-ETH", interval="day", count=7)
+df = pyupbit.get_ohlcv(market, interval="day", count=60, to="20220630")
 
 # 변동폭 * k 계산, (고가 - 저가) * k값
-df['range'] = (df['high'] - df['low']) * 0.3
+df['range'] = (df['high'] - df['low']) * k
 
 # target(매수가), range 컬럼을 한칸씩 밑으로 내림(.shift(1))
 df['target'] = df['open'] + df['range'].shift(1)

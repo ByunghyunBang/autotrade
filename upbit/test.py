@@ -12,6 +12,9 @@ def get_balance(ticker):
                 return 0
     return 0
 
+def get_middle(value1, value2, rate=0.5):
+    return value1 + (value2 - value1) * rate
+
 access = os.getenv('UPBIT_ACCESS')
 secret = os.getenv('UPBIT_SECRET')
 
@@ -20,6 +23,7 @@ upbit = pyupbit.Upbit(access, secret)
 print(upbit.get_balance("KRW-BTC"))     # KRW-BTC 조회
 print(upbit.get_balance("KRW"))         # 보유 현금 조회
 
+print(get_middle(100,200))
 # krw = get_balance("KRW")
 # if krw > 5000:
 #     print("매수:{}".format(krw))

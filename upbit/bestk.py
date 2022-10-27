@@ -1,9 +1,10 @@
 import pyupbit
 import numpy as np
 
+market = "KRW-ETH"
 
 def get_ror(k=0.5):
-    df = pyupbit.get_ohlcv("KRW-BTC", interval="day", count=24)
+    df = pyupbit.get_ohlcv(market, interval="day", count=24)
     df['range'] = (df['high'] - df['low']) * k
     df['target'] = df['open'] + df['range'].shift(1)
 

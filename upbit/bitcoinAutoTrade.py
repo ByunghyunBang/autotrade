@@ -84,7 +84,7 @@ while True:
         start_time = get_start_time(market)
         end_time = start_time + datetime.timedelta(days=1)
 
-        if start_time < now < end_time - datetime.timedelta(seconds=10):
+        if start_time < now < end_time - datetime.timedelta(seconds=20):
             ohlcv_day2 = pyupbit.get_ohlcv(market, interval="day", count=2)
             today_open = get_today_open(ohlcv_day2)
             # target_price = get_target_price(ohlcv_day2, k)
@@ -134,12 +134,14 @@ while True:
                 log("sell: current_price={}, crypto={}".format(current_price, crypto))
                 if trading_enabled:
                     upbit.sell_market_order(market, crypto)
-            
+                    time.sleep(5)
+
             # 현재 잔액 로그
             krw = get_balance("KRW")
             log("Closing balance={}".format(krw))
             clear_flags()
-        time.sleep(5)
+
+        time.sleep(10)
     except Exception as e:
         log(e)
-        time.sleep(5)
+        time.sleep(10)
