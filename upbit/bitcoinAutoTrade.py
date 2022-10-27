@@ -6,6 +6,9 @@ import os
 access = os.getenv('UPBIT_ACCESS')
 secret = os.getenv('UPBIT_SECRET')
 
+def get_middle(value1, value2, rate=0.5):
+    return value1 + (value2 - value1) * rate
+
 def get_target_price(ohlcv_day2, k):
     """변동성 돌파 전략으로 매수 목표가 조회"""
     df = ohlcv_day2
@@ -13,10 +16,10 @@ def get_target_price(ohlcv_day2, k):
     return target_price
 
 def get_target_price2(ohlcv_day2, k):
-    """변동성 돌파 전략으로 매수 목표가 조회 (어제 종가 아닌 오늘 최저가 기준으로 매수 목표 설정)"""
+    """변동성 돌파 전략으로 매수 목표가 조회 (어제 종가 + 오늘 최저가 가중치 반영으로 매수 목표 설정)"""
     df = ohlcv_day2
-    today_low = df.iloc[1]['low']
-    target_price = today_low + (df.iloc[0]['high'] - df.iloc[0]['low']) * k
+    base = get_middle(df.iloc[0]['close'],df.iloc[1]['low'],0.6)
+    target_price = base + (df.iloc[0]['high'] - df.iloc[0]['low']) * k
     return target_price
 
 def get_today_open(ohlcv_day2):
