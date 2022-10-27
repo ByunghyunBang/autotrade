@@ -132,7 +132,7 @@ while True:
             # 일일 종료 시점에 전량매도
             crypto = get_balance(symbol)
             if crypto > 0.00008:
-                log("sell: current_price={}, crypto={}".format(current_price, crypto))
+                log("closing sell: current_price={}, crypto={}, current_balance={}".format(current_price, crypto, current_price*crypto))
                 if trading_enabled:
                     upbit.sell_market_order(market, crypto)
                     time.sleep(5)
