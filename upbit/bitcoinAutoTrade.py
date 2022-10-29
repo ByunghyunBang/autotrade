@@ -123,7 +123,7 @@ while True:
             if (not meet_expected_price) and (current_price > expected_price):
                 half_crypto = get_balance(symbol) * 0.5
                 if half_crypto > 0.00008:
-                    log("exit: current_price={}, expected_price={}, half_crypto={}".format(current_price, expected_price, half_crypto))
+                    log("sell half on expected price: current_price={}, expected_price={}, half_crypto={}".format(current_price, expected_price, half_crypto))
                     if trading_enabled:
                         upbit.sell_market_order(market, half_crypto)
                     meet_expected_price=True
