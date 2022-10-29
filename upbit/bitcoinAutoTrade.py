@@ -85,9 +85,15 @@ while True:
     try:
         now = datetime.datetime.now()
         start_time = get_start_time(market)
-        end_time = start_time + datetime.timedelta(days=1)
+        end_time = start_time + datetime.timedelta(days=1) - datetime.timedelta(seconds=20)
 
-        if start_time < now < end_time - datetime.timedelta(seconds=20):
+        # 일일 거래 시작 시점에 flag reset
+        if is_closed and (start_time < now < end_time):
+            is_closed = False
+            clear_flags()
+
+        # 거래 가능 시간: 오전9시 ~ 다음난 오전9시 20초전 (8:59:40)
+        if start_time < now < end_time:
             ohlcv_day2 = pyupbit.get_ohlcv(market, interval="day", count=2)
             today_open = get_today_open(ohlcv_day2)
             # target_price = get_target_price(ohlcv_day2, k)
@@ -99,10 +105,6 @@ while True:
                 "(no-event) market={},current_price={},target_price={},expected_price={},emergency_sell_price={},today_open={},is_frozen={}"
                 .format(market,current_price, target_price, expected_price, emergency_sell_price, today_open, is_frozen)
                 )
-
-            if is_closed:
-                is_closed=False
-                clear_flags()
 
             # Freeze 상태이면 거래하지 않음
             if is_frozen:
@@ -135,6 +137,7 @@ while True:
                         upbit.sell_market_order(market, crypto)
                     # set_freeze(now)
 
+        # 일일 종료 시점
         else:
             # 일일 종료 시점에 전량매도
             if not is_closed:
