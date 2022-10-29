@@ -53,7 +53,8 @@ def log(msg):
     print(now, msg)
 
 def clear_flags():
-    global meet_expected_price, emergency_sell, is_frozen, frozen_time
+    global already_buyed, meet_expected_price, emergency_sell, is_frozen, frozen_time
+    already_buyed=False
     meet_expected_price=False
     emergency_sell=False
     is_frozen=False
@@ -103,12 +104,13 @@ while True:
                 continue
 
             # 변동성 돌파 시점에 매수
-            if (not meet_expected_price) and (current_price > target_price):
+            if (not already_buyed) and (current_price > target_price):
                 krw = get_balance("KRW")
                 if krw > 5000:
                     log("buy: current_price={}, target_price={}, krw={}".format(current_price, target_price, krw))
                     if trading_enabled:
                         upbit.buy_market_order(market, krw*0.9995)
+                    already_buyed = True
 
             # 기대이익실현 시점에 50% 매도
             if (not meet_expected_price) and (current_price > expected_price):
