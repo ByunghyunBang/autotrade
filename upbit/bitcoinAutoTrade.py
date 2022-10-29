@@ -53,12 +53,13 @@ def log(msg):
     print(now, msg)
 
 def clear_flags():
-    global already_buyed, meet_expected_price, emergency_sell, is_frozen, frozen_time
+    global already_buyed, meet_expected_price, emergency_sell, is_frozen, frozen_time, is_closed
     already_buyed=False
     meet_expected_price=False
     emergency_sell=False
     is_frozen=False
     frozen_time=time.time()
+    is_closed=False
 
 def set_freeze(now):
     global is_frozen, frozen_time
@@ -99,6 +100,10 @@ while True:
                 .format(market,current_price, target_price, expected_price, emergency_sell_price, today_open, is_frozen)
                 )
 
+            if is_closed:
+                is_closed=False
+                clear_flags()
+
             # Freeze 상태이면 거래하지 않음
             if is_frozen:
                 continue
@@ -132,17 +137,18 @@ while True:
 
         else:
             # 일일 종료 시점에 전량매도
-            crypto = get_balance(symbol)
-            if crypto > 0.00008:
-                log("closing sell: current_price={}, crypto={}, current_balance={}".format(current_price, crypto, current_price*crypto))
-                if trading_enabled:
-                    upbit.sell_market_order(market, crypto)
-                    time.sleep(5)
+            if not is_closed:
+                crypto = get_balance(symbol)
+                if crypto > 0.00008:
+                    log("closing sell: current_price={}, crypto={}, current_balance={}".format(current_price, crypto, current_price*crypto))
+                    if trading_enabled:
+                        upbit.sell_market_order(market, crypto)
+                        time.sleep(5) # Waiting order completed
 
-            # 현재 잔액 로그
-            krw = get_balance("KRW")
-            log("Closing balance={}".format(krw))
-            clear_flags()
+                # 현재 잔액 로그
+                krw = get_balance("KRW")
+                log("Closing balance={}".format(krw))
+                is_closed= True
 
         time.sleep(10)
     except Exception as e:
