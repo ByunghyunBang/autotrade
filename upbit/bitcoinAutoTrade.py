@@ -76,7 +76,7 @@ emergency_sell_rate=0.02 # 하락시 손절시점 설정
 
 # 로그인
 upbit = pyupbit.Upbit(access, secret)
-log("autotrade start: k={}, expected_rate={}, emergency_sell_rate={}".format(k, expected_rate, emergency_sell_rate))
+log("autotrade start: market={}, k={}, expected_rate={}, emergency_sell_rate={}".format(market, k, expected_rate, emergency_sell_rate))
 
 # 자동매매 시작
 clear_flags()
