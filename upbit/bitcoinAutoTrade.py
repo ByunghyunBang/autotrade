@@ -72,7 +72,7 @@ symbol="ETH"
 market="KRW-{}".format(symbol)
 k=0.3
 expected_rate=0.02 # 매수시점대비 몇% 상승시 매도할 것인가 (절반만 매도)
-emergency_sell_rate=0.01 # 하락시 손절시점 설정
+emergency_sell_rate=0.02 # 하락시 손절시점 설정
 
 # 로그인
 upbit = pyupbit.Upbit(access, secret)
