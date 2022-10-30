@@ -70,13 +70,13 @@ def set_freeze(now):
 trading_enabled=True
 symbol="ETH"
 market="KRW-{}".format(symbol)
-k=0.3
+k=0.4
 expected_rate=0.02 # 매수시점대비 몇% 상승시 매도할 것인가 (절반만 매도)
 emergency_sell_rate=0.02 # 하락시 손절시점 설정
 
 # 로그인
 upbit = pyupbit.Upbit(access, secret)
-log("autotrade start")
+log("autotrade start: k={}, expected_rate={}, emergency_sell_rate={}".format(k, expected_rate, emergency_sell_rate))
 
 # 자동매매 시작
 clear_flags()
