@@ -66,6 +66,9 @@ def set_freeze(now):
     is_frozen=True
     frozen_time=now
 
+def human_readable(num):
+    return format(int(num), ',')
+
 # 각종 설정
 trading_enabled=True
 symbol="ETH"
@@ -102,9 +105,25 @@ while True:
             expected_price = target_price * (1 + expected_rate)
             emergency_sell_price = target_price * (1 - emergency_sell_rate)
             log(
-                "(no-event) market={},current_price={},target_price={},expected_price={},emergency_sell_price={},today_open={},is_frozen={}"
-                .format(market,current_price, target_price, expected_price, emergency_sell_price, today_open, is_frozen)
+                "(no-event) market={} current_price={} target_price={} expected_price={} emergency_sell_price={} today_open={} is_frozen={}"
+                .format(
+                    market,
+                    human_readable(current_price),
+                    human_readable(target_price),
+                    human_readable(expected_price),
+                    human_readable(emergency_sell_price),
+                    human_readable(today_open),
+                    is_frozen
+                    )
                 )
+            log(
+                "(no-event) diff from current: target_price={} expected_price={} emergency_sell_price={}"
+                .format(
+                    human_readable(target_price - current_price),
+                    human_readable(expected_price - current_price),
+                    human_readable(emergency_sell_price - current_price),
+                )
+            )
 
             # Freeze 상태이면 거래하지 않음
             if is_frozen:
