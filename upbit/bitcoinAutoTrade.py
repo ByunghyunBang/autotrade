@@ -55,7 +55,9 @@ def log(msg):
 
 def log_and_notify(msg):
     log(msg)
-    lineNotify.line_notify(msg)
+    now = datetime.datetime.now().replace(microsecond=0)
+    notify_msg = str(now) + "\n" + msg.replace(";","\n").replace(": ",":\n")
+    lineNotify.line_notify(notify_msg)
 
 def clear_flags():
     global already_buyed, meet_expected_price, emergency_sell, is_frozen, frozen_time, is_closed
