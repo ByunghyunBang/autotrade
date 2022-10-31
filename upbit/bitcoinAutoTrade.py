@@ -155,7 +155,7 @@ while True:
                         upbit.buy_market_order(market, krw*0.9995)
                     already_buyed = True
 
-            # 기대이익실현 시점에 50% 매도
+            # 기대이익실현 시점에 일부 매도
             if (not meet_expected_price) and (current_price > expected_price):
                 partial_crypto = get_balance(symbol) * partial_sell_rate
                 if partial_crypto > 0.00008:
