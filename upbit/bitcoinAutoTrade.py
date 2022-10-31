@@ -172,7 +172,7 @@ while True:
                     meet_expected_price=True
 
             # 손절 : 지정된 손절시점에서 전량매도
-            if (current_price < emergency_sell_price and current_price < today_open):
+            if (current_price < emergency_sell_price):
                 crypto = get_balance(symbol)
                 if crypto > 0.00008:
                     log_and_notify("emergency sell: current_price={}, crypto={}".format(current_price, crypto))
