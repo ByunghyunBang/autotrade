@@ -80,11 +80,15 @@ symbol="ETH"
 market="KRW-{}".format(symbol)
 k=0.4
 expected_rate=0.02 # 매수시점대비 몇% 상승시 매도할 것인가 (절반만 매도)
+partial_sell_rate=0.7
 emergency_sell_rate=0.02 # 하락시 손절시점 설정
 
 # 로그인
 upbit = pyupbit.Upbit(access, secret)
-log("autotrade start: market={}, k={}, expected_rate={}, emergency_sell_rate={}".format(market, k, expected_rate, emergency_sell_rate))
+log_and_notify(
+    "autotrade start: market={};k={};expected_rate={};partial_sell_rate={};emergency_sell_rate={}"
+    .format(market, k, expected_rate, partial_sell_rate, emergency_sell_rate)
+)
 
 # 자동매매 시작
 clear_flags()
@@ -151,7 +155,7 @@ while True:
 
             # 기대이익실현 시점에 50% 매도
             if (not meet_expected_price) and (current_price > expected_price):
-                partial_crypto = get_balance(symbol) * 0.5
+                partial_crypto = get_balance(symbol) * partial_sell_rate
                 if partial_crypto > 0.00008:
                     log_and_notify(
                         "sell half on expected price: current_price={};expected_price={};partial_crypto={}"
