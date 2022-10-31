@@ -3,6 +3,7 @@ import pyupbit
 import datetime
 import os
 import traceback
+import lineNotify
 
 access = os.getenv('UPBIT_ACCESS')
 secret = os.getenv('UPBIT_SECRET')
@@ -51,6 +52,10 @@ def get_current_price(market):
 def log(msg):
     now = datetime.datetime.now()
     print(now, msg)
+
+def log_and_notify(msg):
+    log(msg)
+    lineNotify.line_notify(msg)
 
 def clear_flags():
     global already_buyed, meet_expected_price, emergency_sell, is_frozen, frozen_time, is_closed
@@ -133,7 +138,7 @@ while True:
             if (not already_buyed) and (current_price > target_price):
                 krw = get_balance("KRW")
                 if krw > 5000:
-                    log("buy: current_price={}, target_price={}, krw={}".format(current_price, target_price, krw))
+                    log_and_notify("buy: current_price={}, target_price={}, krw={}".format(current_price, target_price, krw))
                     if trading_enabled:
                         upbit.buy_market_order(market, krw*0.9995)
                     already_buyed = True
@@ -142,7 +147,7 @@ while True:
             if (not meet_expected_price) and (current_price > expected_price):
                 half_crypto = get_balance(symbol) * 0.5
                 if half_crypto > 0.00008:
-                    log("sell half on expected price: current_price={}, expected_price={}, half_crypto={}".format(current_price, expected_price, half_crypto))
+                    log_and_notify("sell half on expected price: current_price={}, expected_price={}, half_crypto={}".format(current_price, expected_price, half_crypto))
                     if trading_enabled:
                         upbit.sell_market_order(market, half_crypto)
                     meet_expected_price=True
@@ -151,7 +156,7 @@ while True:
             if (current_price < emergency_sell_price and current_price < today_open):
                 crypto = get_balance(symbol)
                 if crypto > 0.00008:
-                    log("emergency sell: current_price={}, crypto={}".format(current_price, crypto))
+                    log_and_notify("emergency sell: current_price={}, crypto={}".format(current_price, crypto))
                     if trading_enabled:
                         upbit.sell_market_order(market, crypto)
                     # set_freeze(now)
@@ -162,14 +167,14 @@ while True:
             if not is_closed:
                 crypto = get_balance(symbol)
                 if crypto > 0.00008:
-                    log("closing sell: current_price={}, crypto={}, current_balance={}".format(current_price, crypto, current_price*crypto))
+                    log_and_notify("closing sell: current_price={}, crypto={}, current_balance={}".format(current_price, crypto, current_price*crypto))
                     if trading_enabled:
                         upbit.sell_market_order(market, crypto)
                         time.sleep(5) # Waiting order completed
 
                 # 현재 잔액 로그
                 krw = get_balance("KRW")
-                log("Closing balance={}".format(krw))
+                log_and_notify("Closing balance={}".format(krw))
                 is_closed= True
 
         time.sleep(10)
