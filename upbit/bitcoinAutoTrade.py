@@ -110,7 +110,7 @@ while True:
             expected_price = target_price * (1 + expected_rate)
             emergency_sell_price = target_price * (1 - emergency_sell_rate)
             log(
-                "(no-event) market={} current_price={} target_price={} expected_price={} emergency_sell_price={} today_open={} is_frozen={}"
+                "(no-event) market={};current_price={};target_price={};expected_price={};emergency_sell_price={};today_open={};is_frozen={}"
                 .format(
                     market,
                     human_readable(current_price),
@@ -122,7 +122,7 @@ while True:
                     )
                 )
             log(
-                "(no-event) diff from current: target_price={} expected_price={} emergency_sell_price={}"
+                "(no-event) diff from current: target_price={};expected_price={};emergency_sell_price={}"
                 .format(
                     human_readable(target_price - current_price),
                     human_readable(expected_price - current_price),
@@ -138,18 +138,31 @@ while True:
             if (not already_buyed) and (current_price > target_price):
                 krw = get_balance("KRW")
                 if krw > 5000:
-                    log_and_notify("buy: current_price={}, target_price={}, krw={}".format(current_price, target_price, krw))
+                    log_and_notify(
+                        "buy: current_price={};target_price={};krw={}"
+                        .format(
+                            human_readable(current_price),
+                            human_readable(target_price, krw)
+                        )
+                    )
                     if trading_enabled:
                         upbit.buy_market_order(market, krw*0.9995)
                     already_buyed = True
 
             # 기대이익실현 시점에 50% 매도
             if (not meet_expected_price) and (current_price > expected_price):
-                half_crypto = get_balance(symbol) * 0.5
-                if half_crypto > 0.00008:
-                    log_and_notify("sell half on expected price: current_price={}, expected_price={}, half_crypto={}".format(current_price, expected_price, half_crypto))
+                partial_crypto = get_balance(symbol) * 0.5
+                if partial_crypto > 0.00008:
+                    log_and_notify(
+                        "sell half on expected price: current_price={};expected_price={};partial_crypto={}"
+                        .format(
+                            human_readable(current_price),
+                            human_readable(expected_price),
+                            human_readable(partial_crypto)
+                        )
+                    )
                     if trading_enabled:
-                        upbit.sell_market_order(market, half_crypto)
+                        upbit.sell_market_order(market, partial_crypto)
                     meet_expected_price=True
 
             # 손절 : 지정된 손절시점에서 전량매도
@@ -167,14 +180,26 @@ while True:
             if not is_closed:
                 crypto = get_balance(symbol)
                 if crypto > 0.00008:
-                    log_and_notify("closing sell: current_price={}, crypto={}, current_balance={}".format(current_price, crypto, current_price*crypto))
+                    log_and_notify(
+                        "closing sell: current_price={};crypto={};current_balance={}"
+                        .format(
+                            human_readable(current_price),
+                            human_readable(crypto),
+                            human_readable(current_price*crypto)
+                        )
+                    )
                     if trading_enabled:
                         upbit.sell_market_order(market, crypto)
                         time.sleep(5) # Waiting order completed
 
                 # 현재 잔액 로그
                 krw = get_balance("KRW")
-                log_and_notify("Closing balance={}".format(krw))
+                log_and_notify(
+                    "Closing balance={}"
+                    .format(
+                        human_readable(krw)
+                    )
+                )
                 is_closed= True
 
         time.sleep(10)
