@@ -148,7 +148,8 @@ while True:
                         "buy: current_price={};target_price={};krw={}"
                         .format(
                             human_readable(current_price),
-                            human_readable(target_price, krw)
+                            human_readable(target_price),
+                            human_readable(krw)
                         )
                     )
                     if trading_enabled:
@@ -211,5 +212,5 @@ while True:
         time.sleep(10)
     except Exception as e:
         log(e)
-        traceback.print_exec()
+        traceback.print_exc()
         time.sleep(10)
