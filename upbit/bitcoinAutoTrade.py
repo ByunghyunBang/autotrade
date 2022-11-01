@@ -176,7 +176,7 @@ while True:
             if (current_price < emergency_sell_price):
                 crypto = get_balance(symbol)
                 if crypto > 0.00008:
-                    log_and_notify("emergency sell: current_price={}, crypto={}".format(current_price, crypto))
+                    log_and_notify("emergency sell: current_price={};crypto={}".format(current_price, crypto))
                     if trading_enabled:
                         upbit.sell_market_order(market, crypto)
                     # set_freeze(now)
