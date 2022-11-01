@@ -141,7 +141,7 @@ while True:
                 continue
 
             # 변동성 돌파 시점에 매수
-            if (not already_buyed) and (current_price > target_price):
+            if (not already_buyed) and (current_price >= target_price):
                 krw = get_balance("KRW")
                 if krw > 5000:
                     log_and_notify(
@@ -157,7 +157,7 @@ while True:
                     already_buyed = True
 
             # 기대이익실현 시점에 일부 매도
-            if (not meet_expected_price) and (current_price > expected_price):
+            if (not meet_expected_price) and (current_price >= expected_price):
                 partial_crypto = get_balance(symbol) * partial_sell_rate
                 if partial_crypto > 0.00008:
                     log_and_notify(
@@ -173,7 +173,7 @@ while True:
                     meet_expected_price=True
 
             # 손절 : 지정된 손절시점에서 전량매도
-            if (current_price < emergency_sell_price):
+            if (current_price <= emergency_sell_price):
                 crypto = get_balance(symbol)
                 if crypto > 0.00008:
                     log_and_notify("emergency sell: current_price={};crypto={}".format(current_price, crypto))
