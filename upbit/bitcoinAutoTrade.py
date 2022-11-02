@@ -114,7 +114,8 @@ while True:
             target_price = get_target_price2(ohlcv_day2, k)
             current_price = get_current_price(market)
             expected_price = target_price * (1 + expected_rate)
-            emergency_sell_price = target_price * (1 - emergency_sell_rate)
+            if (not already_buyed) or emergency_sell_price is None:
+                emergency_sell_price = target_price * (1 - emergency_sell_rate)
             log(
                 "(no-event) market={};current_price={};target_price={};expected_price={};emergency_sell_price={};today_open={};is_frozen={}"
                 .format(
@@ -155,6 +156,7 @@ while True:
                     if trading_enabled:
                         upbit.buy_market_order(market, krw*0.9995)
                     already_buyed = True
+                    emergency_sell_price = current_price * (1 - emergency_sell_rate)
 
             # 기대이익실현 시점에 일부 매도
             if (not meet_expected_price) and (current_price >= expected_price):
