@@ -11,21 +11,21 @@ secret = os.getenv('UPBIT_SECRET')
 def get_middle(value1, value2, rate=0.5):
     return value1 + (value2 - value1) * rate
 
-def get_target_price(ohlcv_day2, k):
+def get_target_price(ohlcv_candle2, k):
     """변동성 돌파 전략으로 매수 목표가 조회"""
-    df = ohlcv_day2
+    df = ohlcv_candle2
     target_price = df.iloc[0]['close'] + (df.iloc[0]['high'] - df.iloc[0]['low']) * k
     return target_price
 
-def get_target_price2(ohlcv_day2, k):
+def get_target_price2(ohlcv_candle2, k):
     """변동성 돌파 전략으로 매수 목표가 조회 (어제 종가 + 오늘 최저가 가중치 반영으로 매수 목표 설정)"""
-    df = ohlcv_day2
+    df = ohlcv_candle2
     base = get_middle(df.iloc[0]['close'],df.iloc[1]['low'],0.6)
     target_price = base + (df.iloc[0]['high'] - df.iloc[0]['low']) * k
     return target_price
 
-def get_today_open(ohlcv_day2):
-    df = ohlcv_day2
+def get_today_open(ohlcv_candle2):
+    df = ohlcv_candle2
     return df.iloc[1]['open']
 
 def get_start_time(market):
@@ -108,10 +108,10 @@ while True:
 
         # 거래 가능 시간: 오전9시 ~ 다음난 오전9시 20초전 (8:59:40)
         if start_time < now < end_time:
-            ohlcv_day2 = pyupbit.get_ohlcv(market, interval="day", count=2)
-            today_open = get_today_open(ohlcv_day2)
-            # target_price = get_target_price(ohlcv_day2, k)
-            target_price = get_target_price2(ohlcv_day2, k)
+            ohlcv_candle2 = pyupbit.get_ohlcv(market, interval="day", count=2)
+            today_open = get_today_open(ohlcv_candle2)
+            # target_price = get_target_price(ohlcv_candle2, k)
+            target_price = get_target_price2(ohlcv_candle2, k)
             current_price = get_current_price(market)
             expected_price = target_price * (1 + expected_rate)
             if (not already_buyed) or emergency_sell_price is None:
