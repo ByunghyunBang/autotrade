@@ -30,7 +30,7 @@ def get_today_open(ohlcv_candle2):
 
 def get_start_time(market):
     """시작 시간 조회"""
-    df = pyupbit.get_ohlcv(market, interval="day", count=1)
+    df = pyupbit.get_ohlcv(market, interval=candle_interval, count=1)
     start_time = df.index[0]
     return start_time
 
@@ -80,9 +80,10 @@ def human_readable(num):
 trading_enabled=True
 symbol="ETH"
 market="KRW-{}".format(symbol)
-k=0.4
-expected_rate=0.02 # 매수시점대비 몇% 상승시 매도할 것인가 (절반만 매도)
-partial_sell_rate=0.7
+candle_interval="minute60"
+k=0.8
+expected_rate=0.02 # 익절 조건 : 매수시점대비 몇% 상승시 매도할 것인가 (일부 매도)
+partial_sell_rate=0.7 # 익절시 매도비율
 emergency_sell_rate=0.02 # 하락시 손절시점 설정
 
 # 로그인
@@ -108,7 +109,7 @@ while True:
 
         # 거래 가능 시간: 오전9시 ~ 다음난 오전9시 20초전 (8:59:40)
         if start_time < now < end_time:
-            ohlcv_candle2 = pyupbit.get_ohlcv(market, interval="day", count=2)
+            ohlcv_candle2 = pyupbit.get_ohlcv(market, interval=candle_interval, count=2)
             today_open = get_today_open(ohlcv_candle2)
             # target_price = get_target_price(ohlcv_candle2, k)
             target_price = get_target_price2(ohlcv_candle2, k)
