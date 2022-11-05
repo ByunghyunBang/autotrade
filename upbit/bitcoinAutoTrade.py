@@ -80,8 +80,8 @@ def human_readable(num):
 trading_enabled=True
 symbol="ETH"
 market="KRW-{}".format(symbol)
-candle_interval="minute240"
-time_delta=datetime.timedelta(minutes=240)
+candle_interval="minute60"
+time_delta=datetime.timedelta(minutes=60)
 k=0.8
 expected_rate=0.02 # 익절 조건 : 매수시점대비 몇% 상승시 매도할 것인가 (일부 매도)
 partial_sell_rate=0.8 # 익절시 매도비율
@@ -185,9 +185,9 @@ while True:
                         upbit.sell_market_order(market, crypto)
                     # set_freeze(now)
 
-        # 일일 종료 시점
+        # 종료 시점
         else:
-            # 일일 종료 시점에 전량매도
+            # 종료 시점에 전량매도
             if not is_closed:
                 crypto = get_balance(symbol)
                 if crypto > 0.00008:
