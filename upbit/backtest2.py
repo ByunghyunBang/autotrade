@@ -15,7 +15,7 @@ market = "KRW-ETH"
 # df = pyupbit.get_ohlcv(market, interval="minute240", count=6 * 90, to=test_period)
 # df = pyupbit.get_ohlcv(market, interval="minute60", count=24 * 120, to=test_period)
 # df = pyupbit.get_ohlcv(market, interval="day", count=90, to=test_period)
-df = pyupbit.get_ohlcv(market, interval="minute60", count=24 * 120)
+df = pyupbit.get_ohlcv(market, interval="day", count=24 * 120)
 
 df['low_rate'] = round((df['open'] - df['low']) / df['open'] * 100, 2)
 df['high_rate'] = round((df['high'] - df['open']) / df['open'] * 100, 2)

@@ -15,15 +15,33 @@ def get_balance(ticker):
 def get_middle(value1, value2, rate=0.5):
     return value1 + (value2 - value1) * rate
 
+def get_target_price2(ohlcv_day2, k):
+    """변동성 돌파 전략으로 매수 목표가 조회 (어제 종가 + 오늘 최저가 가중치 반영으로 매수 목표 설정)"""
+    df = ohlcv_day2
+    base = get_middle(df.iloc[0]['close'],df.iloc[1]['low'],0.6)
+    target_price = base + (df.iloc[0]['high'] - df.iloc[0]['low']) * k
+    return target_price
+
 access = os.getenv('UPBIT_ACCESS')
 secret = os.getenv('UPBIT_SECRET')
 
 upbit = pyupbit.Upbit(access, secret)
 
-print(upbit.get_balance("KRW-BTC"))     # KRW-BTC 조회
+print(upbit.get_balance("KRW-ETH"))     # KRW-BTC 조회
 print(upbit.get_balance("KRW"))         # 보유 현금 조회
 
-print(get_middle(100,200))
+market="KRW-BTC"
+df = pyupbit.get_ohlcv(market, interval="day", count=2)
+diff = df.iloc[0]['high'] - df.iloc[0]['low']
+base = get_middle(df.iloc[0]['close'],df.iloc[1]['low'],0.6)
+close = df.iloc[0]['close']
+today_low = df.iloc[1]['low']
+target = base + diff * 0.5
+print(df)
+print("diff={},close={},today_low={},base={}".format(diff, close, today_low, base))
+print("target={}".format(target))
+print(get_middle(df.iloc[0]['high'],df.iloc[0]['low']))
+
 # krw = get_balance("KRW")
 # if krw > 5000:
 #     print("매수:{}".format(krw))
