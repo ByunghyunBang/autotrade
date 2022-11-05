@@ -83,7 +83,7 @@ market="KRW-{}".format(symbol)
 candle_interval="minute240"
 k=0.8
 expected_rate=0.02 # 익절 조건 : 매수시점대비 몇% 상승시 매도할 것인가 (일부 매도)
-partial_sell_rate=0.7 # 익절시 매도비율
+partial_sell_rate=0.8 # 익절시 매도비율
 emergency_sell_rate=0.02 # 하락시 손절시점 설정
 
 # 로그인
