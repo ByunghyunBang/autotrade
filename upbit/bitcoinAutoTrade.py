@@ -81,6 +81,7 @@ trading_enabled=True
 symbol="ETH"
 market="KRW-{}".format(symbol)
 candle_interval="minute240"
+time_delta=datetime.timedelta(minutes=240)
 k=0.8
 expected_rate=0.02 # 익절 조건 : 매수시점대비 몇% 상승시 매도할 것인가 (일부 매도)
 partial_sell_rate=0.8 # 익절시 매도비율
@@ -89,8 +90,8 @@ emergency_sell_rate=0.02 # 하락시 손절시점 설정
 # 로그인
 upbit = pyupbit.Upbit(access, secret)
 log_and_notify(
-    "autotrade start: market={};k={};expected_rate={};partial_sell_rate={};emergency_sell_rate={}"
-    .format(market, k, expected_rate, partial_sell_rate, emergency_sell_rate)
+    "autotrade start: market={};k={};expected_rate={};partial_sell_rate={};emergency_sell_rate={};candle_interval={}"
+    .format(market, k, expected_rate, partial_sell_rate, emergency_sell_rate, candle_interval)
 )
 
 # 자동매매 시작
@@ -100,7 +101,7 @@ while True:
     try:
         now = datetime.datetime.now()
         start_time = get_start_time(market)
-        end_time = start_time + datetime.timedelta(days=1) - datetime.timedelta(seconds=20)
+        end_time = start_time + time_delta - datetime.timedelta(seconds=20)
 
         # 일일 거래 시작 시점에 flag reset
         if is_closed and (start_time < now < end_time):

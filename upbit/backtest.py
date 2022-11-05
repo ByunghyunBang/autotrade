@@ -25,7 +25,7 @@ df['target_to_high_percent'] = diff_percent(df['target_to_high'] / df['target'] 
 
 # ror(수익률), np.where(조건문, 참일때 값, 거짓일때 값)
 df['ror'] = np.where(df['high'] > df['target'],
-                     df['close'] / df['target'] - 0.0005,
+                     df['close'] / df['target'] - 0.001,
                      1)
 # # 손절 로직 반영
 # df['ror'] = np.where(df['ror'] > 0.995, df['ror'], 0.995)
