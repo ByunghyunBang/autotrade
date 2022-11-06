@@ -1,15 +1,17 @@
 import pyupbit
 import numpy as np
 
-k = 0.8
+k = 0.3
 market = "KRW-ETH"
 
 def diff_percent(n):
     return round((n - 1) * 100, 2)
 
 # OHLCV(open, high, low, close, volume)로 당일 시가, 고가, 저가, 종가, 거래량에 대한 데이터
-df = pyupbit.get_ohlcv(market, interval="minute60", count=24*7)
-# df = pyupbit.get_ohlcv(market, interval="minute240", count=6*7)
+# df = pyupbit.get_ohlcv(market, interval="minute10", count=24*6*7)
+# df = pyupbit.get_ohlcv(market, interval="minute60", count=24*7)
+df = pyupbit.get_ohlcv(market, interval="minute240", count=6*7)
+# df = pyupbit.get_ohlcv(market, interval="day", count=7)
 
 df['low_rate'] = round((df['open'] - df['low']) / df['open'] * 100, 2)
 df['high_rate'] = round((df['high'] - df['open']) / df['open'] * 100, 2)
@@ -28,7 +30,8 @@ df['ror'] = np.where(df['high'] > df['target'],
                      df['close'] / df['target'] - 0.001,
                      1)
 # # 손절 로직 반영
-# df['ror'] = np.where(df['ror'] > 0.995, df['ror'], 0.995)
+cut_rate = 1 - 0.005
+df['ror'] = np.where(df['ror'] > cut_rate, df['ror'], cut_rate)
 
 df['ror_percent'] = diff_percent(df['ror'])
 
