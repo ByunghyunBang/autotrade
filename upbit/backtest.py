@@ -2,10 +2,16 @@ import pyupbit
 import numpy as np
 
 k = 0.3
+cut_rate = 1 - 0.005
+expecte_rate_p = 2.0
+partial_sell_rate=0.8 # 익절시 매도비율
 market = "KRW-ETH"
 
 def diff_percent(n):
     return round((n - 1) * 100, 2)
+
+def get_middle(value1, value2, rate=0.5):
+    return value1 + (value2 - value1) * rate
 
 # OHLCV(open, high, low, close, volume)로 당일 시가, 고가, 저가, 종가, 거래량에 대한 데이터
 # df = pyupbit.get_ohlcv(market, interval="minute10", count=24*6*7)
@@ -29,11 +35,16 @@ df['target_to_high_percent'] = diff_percent(df['target_to_high'] / df['target'] 
 df['ror'] = np.where(df['high'] > df['target'],
                      df['close'] / df['target'] - 0.001,
                      1)
-# # 손절 로직 반영
-cut_rate = 1 - 0.005
+df['ror_origin'] = df['ror']
+
+# 손절 로직 반영
 df['ror'] = np.where(df['ror'] > cut_rate, df['ror'], cut_rate)
 
-df['ror_percent'] = diff_percent(df['ror'])
+# 익절 로직 반영
+df['ror'] = np.where(df['target_to_high_percent'] > expecte_rate_p, get_middle(df['ror'], (expecte_rate_p / 100 + 1), partial_sell_rate), df['ror'])
+
+df['ror_origin_p'] = diff_percent(df['ror_origin'])
+df['ror_p'] = diff_percent(df['ror'])
 
 # 누적 곱 계산(cumprod) => 누적 수익률
 df['hpr'] = df['ror'].cumprod()
@@ -43,7 +54,7 @@ df['hpr_percent'] = diff_percent(df['hpr'])
 
 print(df.loc[(df.ror != 1), :])
 print("----- 익절조건 -----")
-print(df.loc[(df.target_to_high_percent > 2.0), :])
+print(df.loc[(df.target_to_high_percent > expecte_rate_p), :])
 
 print("시작가 :",df.iloc[0].name, df.iloc[0]['open'])
 print("종료가 :",df.iloc[-1].name, df.iloc[-1]['open'])
