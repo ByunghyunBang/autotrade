@@ -4,6 +4,7 @@ import datetime
 import os
 import traceback
 import lineNotify
+import debug_settings
 
 access = os.getenv('UPBIT_ACCESS')
 secret = os.getenv('UPBIT_SECRET')
@@ -77,7 +78,6 @@ def human_readable(num):
     return format(int(num), ',')
 
 # 각종 설정
-trading_enabled=True
 symbol="ETH"
 market="KRW-{}".format(symbol)
 candle_interval="minute60"
@@ -155,7 +155,7 @@ while True:
                             human_readable(krw)
                         )
                     )
-                    if trading_enabled:
+                    if debug_settings.trading_enabled:
                         upbit.buy_market_order(market, krw*0.9995)
                     already_buyed = True
                     emergency_sell_price = current_price * (1 - emergency_sell_rate)
@@ -172,7 +172,7 @@ while True:
                             human_readable(partial_crypto)
                         )
                     )
-                    if trading_enabled:
+                    if debug_settings.trading_enabled:
                         upbit.sell_market_order(market, partial_crypto)
                     meet_expected_price=True
 
@@ -181,7 +181,7 @@ while True:
                 crypto = get_balance(symbol)
                 if crypto > 0.00008:
                     log_and_notify("emergency sell: current_price={};crypto={}".format(current_price, crypto))
-                    if trading_enabled:
+                    if debug_settings.trading_enabled:
                         upbit.sell_market_order(market, crypto)
                     # set_freeze(now)
 
@@ -199,7 +199,7 @@ while True:
                             human_readable(current_price*crypto)
                         )
                     )
-                    if trading_enabled:
+                    if debug_settings.trading_enabled:
                         upbit.sell_market_order(market, crypto)
                         time.sleep(5) # Waiting order completed
 
