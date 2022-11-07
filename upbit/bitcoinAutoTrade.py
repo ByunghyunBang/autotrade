@@ -191,7 +191,7 @@ while True:
                 crypto = get_balance(symbol)
                 if crypto > 0.00008:
                     total_krw = upbit.get_balance_t()
-                    log_and_notify("emergency sell: current_price={};crypto={};crypto_balance={};total_balance={}"
+                    log_and_notify("emergency sell: current_price={};crypto={};crypto_balance={};total_krw={}"
                         .format(
                             human_readable(current_price), 
                             crypto,
@@ -211,7 +211,7 @@ while True:
                 total_krw = upbit.get_balance_t()
                 if crypto > 0.00008:
                     log_and_notify(
-                        "closing sell: current_price={};crypto={};crypto_balance={};total_balance={}"
+                        "closing sell: current_price={};crypto={};crypto_balance={};total_krw={}"
                         .format(
                             human_readable(current_price),
                             crypto,
@@ -224,13 +224,20 @@ while True:
                         time.sleep(5) # Waiting order completed
 
                 # 현재 잔액 로그
-                krw = get_balance("KRW")
+                total_krw = upbit.get_balance_t()
+                if (latest_krw is None):
+                    latest_krw = total_krw
+
+                total_krw_diff = total_krw - latest_krw
                 log_and_notify(
-                    "Closing balance={}"
+                    "Closing balance={};earned={}({}%)"
                     .format(
-                        human_readable(krw)
+                        human_readable(total_krw),
+                        human_readable(total_krw_diff),
+                        round(total_krw_diff/latest_krw*100,2)
                     )
                 )
+                latest_krw = total_krw
                 is_closed= True
 
         time.sleep(10)
