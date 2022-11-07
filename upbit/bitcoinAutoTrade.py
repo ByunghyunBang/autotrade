@@ -96,6 +96,7 @@ elif candle_interval=="day":
 market="KRW-{}".format(symbol)
 expected_rate=expected_rate_p / 100 # 익절 조건 : 매수시점대비 몇% 상승시 매도할 것인가 (일부 매도)
 emergency_sell_rate=emergency_sell_rate_p / 100
+latest_krw = None
 
 # 로그인
 upbit = pyupbit.Upbit(access, secret)
@@ -227,7 +228,6 @@ while True:
                 total_krw = upbit.get_balance_t()
                 if (latest_krw is None):
                     latest_krw = total_krw
-
                 total_krw_diff = total_krw - latest_krw
                 log_and_notify(
                     "Closing balance={};earned={}({}%)"
