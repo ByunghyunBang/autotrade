@@ -1,15 +1,30 @@
 import pyupbit
 import numpy as np
+import trading_settings
 
-k = 0.3
-cut_rate = 1 - 0.03
-expecte_rate_p = 2.0
-partial_sell_rate=0.8 # 익절시 매도비율
-market = "KRW-ETH"
-# candle_interval="minute60"
-# test_term = 24*7
-candle_interval="minute240"
-test_term = 6*7
+symbol = trading_settings.symbol
+k = trading_settings.k
+expected_rate_p = trading_settings.expected_rate_p
+partial_sell_rate = trading_settings.partial_sell_rate
+emergency_sell_rate_p = trading_settings.emergency_sell_rate_p
+candle_interval = trading_settings.candle_interval
+
+# symbol="ETH"
+# k = 0.4
+# expected_rate_p = 3.0
+# partial_sell_rate = 1.0 # 익절시 매도비율
+# emergency_sell_rate_p = 3
+# # candle_interval="minute60"
+# candle_interval="minute240"
+
+test_days=7
+if candle_interval=="minute240":
+    test_term=test_days*6
+if candle_interval=="minute60":
+    test_term=test_days*24
+
+market="KRW-{}".format(symbol)
+emergency_sell_rate = 1 - (emergency_sell_rate_p / 100)
 
 def diff_percent(n):
     return round((n - 1) * 100, 2)
@@ -42,10 +57,10 @@ df['ror'] = np.where(df['high'] > df['target'],
 df['ror_origin'] = df['ror']
 
 # 손절 로직 반영
-df['ror'] = np.where(df['ror'] > cut_rate, df['ror'], cut_rate)
+df['ror'] = np.where(df['ror'] > emergency_sell_rate, df['ror'], emergency_sell_rate)
 
 # 익절 로직 반영
-df['ror'] = np.where(df['target_to_high_p'] > expecte_rate_p, get_middle(df['ror'], (expecte_rate_p / 100 + 1), partial_sell_rate), df['ror'])
+df['ror'] = np.where(df['target_to_high_p'] > expected_rate_p, get_middle(df['ror'], (expected_rate_p / 100 + 1), partial_sell_rate), df['ror'])
 
 df['ror_origin_p'] = diff_percent(df['ror_origin'])
 df['ror_p'] = diff_percent(df['ror'])
@@ -56,10 +71,11 @@ df['hpr'] = df['ror'].cumprod()
 df['hpr_percent'] = diff_percent(df['hpr'])
 
 
+df = df.drop(columns=["volumn","value"],inplace=True)
 print("----------")
 print(df.loc[(df.ror != 1), :])
 print("----- 익절조건 -----")
-print(df.loc[(df.target_to_high_p > expecte_rate_p), :])
+print(df.loc[(df.target_to_high_p > expected_rate_p), :])
 
 print("시작가 :",df.iloc[0].name, df.iloc[0]['open'])
 print("종료가 :",df.iloc[-1].name, df.iloc[-1]['open'])

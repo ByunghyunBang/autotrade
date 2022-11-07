@@ -79,20 +79,24 @@ def human_readable(num):
 
 # 각종 설정
 symbol="ETH"
-market="KRW-{}".format(symbol)
 candle_interval="minute240"
 time_delta=datetime.timedelta(minutes=240)
-k=0.3
-expected_rate=0.02 # 익절 조건 : 매수시점대비 몇% 상승시 매도할 것인가 (일부 매도)
-partial_sell_rate=0.8 # 익절시 매도비율
-emergency_sell_rate=0.03 # 하락시 손절시점 설정
+k=0.4
+expected_rate_p= 3 # 익절 조건 : 매수시점대비 몇% 상승시 매도할 것인가 (일부 매도)
+partial_sell_rate=1.0 # 익절시 매도비율
+emergency_sell_rate_p=3 # 하락시 손절시점 설정
+
+market="KRW-{}".format(symbol)
+expected_rate=expected_rate_p / 100 # 익절 조건 : 매수시점대비 몇% 상승시 매도할 것인가 (일부 매도)
+emergency_sell_rate=emergency_sell_rate_p / 100
 
 # 로그인
 upbit = pyupbit.Upbit(access, secret)
-log_and_notify(
-    "autotrade start: market={};k={};expected_rate={};partial_sell_rate={};emergency_sell_rate={};candle_interval={}"
-    .format(market, k, expected_rate, partial_sell_rate, emergency_sell_rate, candle_interval)
-)
+if debug_settings.trading_enabled:
+    log_and_notify(
+        "autotrade start: market={};k={};expected_rate={};partial_sell_rate={};emergency_sell_rate={};candle_interval={}"
+        .format(market, k, expected_rate, partial_sell_rate, emergency_sell_rate, candle_interval)
+    )
 
 # 자동매매 시작
 clear_flags()
@@ -112,8 +116,8 @@ while True:
         if start_time < now < end_time:
             ohlcv_candle2 = pyupbit.get_ohlcv(market, interval=candle_interval, count=2)
             today_open = get_today_open(ohlcv_candle2)
-            # target_price = get_target_price(ohlcv_candle2, k)
-            target_price = get_target_price2(ohlcv_candle2, k)
+            target_price = get_target_price(ohlcv_candle2, k)
+            # target_price = get_target_price2(ohlcv_candle2, k)
             current_price = get_current_price(market)
             expected_price = target_price * (1 + expected_rate)
             if (not already_buyed) or emergency_sell_price is None:
