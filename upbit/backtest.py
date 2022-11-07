@@ -1,7 +1,7 @@
 import pyupbit
 import numpy as np
 
-k = 0.5
+k = 0.6
 cut_rate = 1 - 0.005
 expecte_rate_p = 2.0
 partial_sell_rate=0.8 # 익절시 매도비율
