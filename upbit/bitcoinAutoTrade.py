@@ -90,6 +90,8 @@ if candle_interval=="minute240":
     time_delta=datetime.timedelta(minutes=240)
 elif candle_interval=="minute60":
     time_delta=datetime.timedelta(minutes=60)
+elif candle_interval=="day":
+    time_delta=datetime.timedelta(days=1)
 
 market="KRW-{}".format(symbol)
 expected_rate=expected_rate_p / 100 # 익절 조건 : 매수시점대비 몇% 상승시 매도할 것인가 (일부 매도)

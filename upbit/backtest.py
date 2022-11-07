@@ -18,6 +18,8 @@ candle_interval = trading_settings.candle_interval
 # candle_interval="minute240"
 
 test_days=7
+if candle_interval=="day":
+    test_term=test_days
 if candle_interval=="minute240":
     test_term=test_days*6
 if candle_interval=="minute60":
@@ -70,10 +72,10 @@ df['hpr'] = df['ror'].cumprod()
 
 df['hpr_percent'] = diff_percent(df['hpr'])
 
-
-df = df.drop(columns=["volumn","value"],inplace=True)
+df = df.drop(columns=['volume'])
+df = df.drop(columns=['value'])
 print("----------")
-print(df.loc[(df.ror != 1), :])
+print(df.loc[(df['ror'] != 1)])
 print("----- 익절조건 -----")
 print(df.loc[(df.target_to_high_p > expected_rate_p), :])
 
