@@ -2,7 +2,7 @@ import pyupbit
 import numpy as np
 
 k = 0.3
-cut_rate = 1 - 0.005
+cut_rate = 1 - 0.03
 expecte_rate_p = 2.0
 partial_sell_rate=0.8 # 익절시 매도비율
 market = "KRW-ETH"
@@ -30,7 +30,10 @@ df['range'] = (df['high'] - df['low']) * k
 df['target'] = df['open'] + df['range'].shift(1)
 
 df['target_to_high'] = df['high'] - df['target']
-df['target_to_high_percent'] = diff_percent(df['target_to_high'] / df['target'] + 1)
+df['target_to_high_p'] = diff_percent(df['target_to_high'] / df['target'] + 1)
+
+df['target_to_low'] = df['low'] - df['target']
+df['target_to_low_p'] = diff_percent(df['target_to_low'] / df['target'] + 1)
 
 # ror(수익률), np.where(조건문, 참일때 값, 거짓일때 값)
 df['ror'] = np.where(df['high'] > df['target'],
@@ -42,7 +45,7 @@ df['ror_origin'] = df['ror']
 df['ror'] = np.where(df['ror'] > cut_rate, df['ror'], cut_rate)
 
 # 익절 로직 반영
-df['ror'] = np.where(df['target_to_high_percent'] > expecte_rate_p, get_middle(df['ror'], (expecte_rate_p / 100 + 1), partial_sell_rate), df['ror'])
+df['ror'] = np.where(df['target_to_high_p'] > expecte_rate_p, get_middle(df['ror'], (expecte_rate_p / 100 + 1), partial_sell_rate), df['ror'])
 
 df['ror_origin_p'] = diff_percent(df['ror_origin'])
 df['ror_p'] = diff_percent(df['ror'])
@@ -53,9 +56,10 @@ df['hpr'] = df['ror'].cumprod()
 df['hpr_percent'] = diff_percent(df['hpr'])
 
 
+print("----------")
 print(df.loc[(df.ror != 1), :])
 print("----- 익절조건 -----")
-print(df.loc[(df.target_to_high_percent > expecte_rate_p), :])
+print(df.loc[(df.target_to_high_p > expecte_rate_p), :])
 
 print("시작가 :",df.iloc[0].name, df.iloc[0]['open'])
 print("종료가 :",df.iloc[-1].name, df.iloc[-1]['open'])

@@ -81,11 +81,11 @@ def human_readable(num):
 symbol="ETH"
 market="KRW-{}".format(symbol)
 candle_interval="minute240"
-time_delta=datetime.timedelta(minutes=60)
+time_delta=datetime.timedelta(minutes=240)
 k=0.3
 expected_rate=0.02 # 익절 조건 : 매수시점대비 몇% 상승시 매도할 것인가 (일부 매도)
 partial_sell_rate=0.8 # 익절시 매도비율
-emergency_sell_rate=0.005 # 하락시 손절시점 설정
+emergency_sell_rate=0.03 # 하락시 손절시점 설정
 
 # 로그인
 upbit = pyupbit.Upbit(access, secret)
@@ -119,15 +119,14 @@ while True:
             if (not already_buyed) or emergency_sell_price is None:
                 emergency_sell_price = target_price * (1 - emergency_sell_rate)
             log(
-                "(no-event) market={};current_price={};target_price={};expected_price={};emergency_sell_price={};today_open={};is_frozen={}"
+                "(no-event) market={};current_price={};target_price={};expected_price={};emergency_sell_price={};today_open={}"
                 .format(
                     market,
                     human_readable(current_price),
                     human_readable(target_price),
                     human_readable(expected_price),
                     human_readable(emergency_sell_price),
-                    human_readable(today_open),
-                    is_frozen
+                    human_readable(today_open)
                     )
                 )
             log(
