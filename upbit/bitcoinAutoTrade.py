@@ -5,6 +5,7 @@ import os
 import traceback
 import lineNotify
 import debug_settings
+import trading_settings
 
 access = os.getenv('UPBIT_ACCESS')
 secret = os.getenv('UPBIT_SECRET')
@@ -25,7 +26,7 @@ def get_target_price2(ohlcv_candle2, k):
     target_price = base + (df.iloc[0]['high'] - df.iloc[0]['low']) * k
     return target_price
 
-def get_today_open(ohlcv_candle2):
+def get_candle_open(ohlcv_candle2):
     df = ohlcv_candle2
     return df.iloc[1]['open']
 
@@ -78,13 +79,17 @@ def human_readable(num):
     return format(int(num), ',')
 
 # 각종 설정
-symbol="ETH"
-candle_interval="minute240"
-time_delta=datetime.timedelta(minutes=240)
-k=0.4
-expected_rate_p= 3 # 익절 조건 : 매수시점대비 몇% 상승시 매도할 것인가 (일부 매도)
-partial_sell_rate=1.0 # 익절시 매도비율
-emergency_sell_rate_p=3 # 하락시 손절시점 설정
+symbol = trading_settings.symbol
+k = trading_settings.k
+expected_rate_p = trading_settings.expected_rate_p
+partial_sell_rate = trading_settings.partial_sell_rate
+emergency_sell_rate_p = trading_settings.emergency_sell_rate_p
+candle_interval = trading_settings.candle_interval
+
+if candle_interval=="minute240":
+    time_delta=datetime.timedelta(minutes=240)
+elif candle_interval=="minute60":
+    time_delta=datetime.timedelta(minutes=60)
 
 market="KRW-{}".format(symbol)
 expected_rate=expected_rate_p / 100 # 익절 조건 : 매수시점대비 몇% 상승시 매도할 것인가 (일부 매도)
@@ -115,7 +120,7 @@ while True:
         # 거래 가능 시간: 오전9시 ~ 다음난 오전9시 20초전 (8:59:40)
         if start_time < now < end_time:
             ohlcv_candle2 = pyupbit.get_ohlcv(market, interval=candle_interval, count=2)
-            today_open = get_today_open(ohlcv_candle2)
+            candle_open = get_candle_open(ohlcv_candle2)
             target_price = get_target_price(ohlcv_candle2, k)
             # target_price = get_target_price2(ohlcv_candle2, k)
             current_price = get_current_price(market)
@@ -123,14 +128,14 @@ while True:
             if (not already_buyed) or emergency_sell_price is None:
                 emergency_sell_price = target_price * (1 - emergency_sell_rate)
             log(
-                "(no-event) market={};current_price={};target_price={};expected_price={};emergency_sell_price={};today_open={}"
+                "(no-event) market={};current_price={};target_price={};expected_price={};emergency_sell_price={};candle_open={}"
                 .format(
                     market,
                     human_readable(current_price),
                     human_readable(target_price),
                     human_readable(expected_price),
                     human_readable(emergency_sell_price),
-                    human_readable(today_open)
+                    human_readable(candle_open)
                     )
                 )
             log(
