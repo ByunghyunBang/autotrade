@@ -2,7 +2,7 @@ import pyupbit
 import numpy as np
 
 k = 0.3
-cut_rate = 1 - 0.005
+cut_rate = 1 - 0.002
 expecte_rate_p = 2.0
 partial_sell_rate=0.8 # 익절시 매도비율
 market = "KRW-ETH"
@@ -16,7 +16,7 @@ def get_middle(value1, value2, rate=0.5):
 # OHLCV(open, high, low, close, volume)로 당일 시가, 고가, 저가, 종가, 거래량에 대한 데이터
 # df = pyupbit.get_ohlcv(market, interval="minute10", count=24*6*7)
 # df = pyupbit.get_ohlcv(market, interval="minute60", count=24*7)
-df = pyupbit.get_ohlcv(market, interval="minute240", count=6*7)
+df = pyupbit.get_ohlcv(market, interval="minute240", count=6*14)
 # df = pyupbit.get_ohlcv(market, interval="day", count=7)
 
 df['low_rate'] = round((df['open'] - df['low']) / df['open'] * 100, 2)
