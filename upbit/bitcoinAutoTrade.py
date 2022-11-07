@@ -85,7 +85,7 @@ time_delta=datetime.timedelta(minutes=60)
 k=0.3
 expected_rate=0.02 # 익절 조건 : 매수시점대비 몇% 상승시 매도할 것인가 (일부 매도)
 partial_sell_rate=0.8 # 익절시 매도비율
-emergency_sell_rate=0.002 # 하락시 손절시점 설정
+emergency_sell_rate=0.005 # 하락시 손절시점 설정
 
 # 로그인
 upbit = pyupbit.Upbit(access, secret)
