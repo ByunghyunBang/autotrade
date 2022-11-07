@@ -78,6 +78,13 @@ def set_freeze(now):
 def human_readable(num):
     return format(int(num), ',')
 
+def start_log():
+    if debug_settings.trading_enabled:
+        log_and_notify(
+            "start: market={};k={};expected_rate={};partial_sell_rate={};emergency_sell_rate={};candle_interval={}"
+            .format(market, k, expected_rate, partial_sell_rate, emergency_sell_rate, candle_interval)
+        )
+
 # 각종 설정
 symbol = trading_settings.symbol
 k = trading_settings.k
@@ -100,11 +107,7 @@ latest_krw = None
 
 # 로그인
 upbit = pyupbit.Upbit(access, secret)
-if debug_settings.trading_enabled:
-    log_and_notify(
-        "autotrade start: market={};k={};expected_rate={};partial_sell_rate={};emergency_sell_rate={};candle_interval={}"
-        .format(market, k, expected_rate, partial_sell_rate, emergency_sell_rate, candle_interval)
-    )
+start_log()
 
 # 자동매매 시작
 clear_flags()
@@ -119,6 +122,7 @@ while True:
         if is_closed and (start_time < now < end_time):
             is_closed = False
             clear_flags()
+            start_log()
 
         # 거래 가능 시간: 오전9시 ~ 다음난 오전9시 20초전 (8:59:40)
         if start_time < now < end_time:
