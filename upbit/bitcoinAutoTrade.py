@@ -124,7 +124,7 @@ while True:
             clear_flags()
             start_log()
 
-        # 거래 가능 시간: 오전9시 ~ 다음난 오전9시 20초전 (8:59:40)
+        # 거래 가능 시간: 봉시작 ~ 봉종료 20초전
         if start_time < now < end_time:
             ohlcv_candle2 = pyupbit.get_ohlcv(market, interval=candle_interval, count=2)
             candle_open = get_candle_open(ohlcv_candle2)
