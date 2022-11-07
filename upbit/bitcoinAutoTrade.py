@@ -190,7 +190,15 @@ while True:
             if (current_price <= emergency_sell_price):
                 crypto = get_balance(symbol)
                 if crypto > 0.00008:
-                    log_and_notify("emergency sell: current_price={};crypto={}".format(current_price, crypto))
+                    total_krw = upbit.get_balance_t()
+                    log_and_notify("emergency sell: current_price={};crypto={};crypto_balance={};total_balance={}"
+                        .format(
+                            human_readable(current_price), 
+                            crypto,
+                            human_readable(current_price * crypto),
+                            human_readable(total_krw)
+                        )
+                    )
                     if debug_settings.trading_enabled:
                         upbit.sell_market_order(market, crypto)
                     # set_freeze(now)
@@ -200,13 +208,15 @@ while True:
             # 종료 시점에 전량매도
             if not is_closed:
                 crypto = get_balance(symbol)
+                total_krw = upbit.get_balance_t()
                 if crypto > 0.00008:
                     log_and_notify(
-                        "closing sell: current_price={};crypto={};current_balance={}"
+                        "closing sell: current_price={};crypto={};crypto_balance={};total_balance={}"
                         .format(
                             human_readable(current_price),
-                            human_readable(crypto),
-                            human_readable(current_price*crypto)
+                            crypto,
+                            human_readable(current_price*crypto),
+                            human_readable(total_krw)
                         )
                     )
                     if debug_settings.trading_enabled:
