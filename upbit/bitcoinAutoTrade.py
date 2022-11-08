@@ -57,18 +57,20 @@ def log(msg):
 
 def log_and_notify(msg):
     log(msg)
-    now = datetime.datetime.now().replace(microsecond=0)
-    notify_msg = str(now) + "\n" + msg.replace(";","\n").replace(": ",":\n")
-    lineNotify.line_notify(notify_msg)
+    if debug_settings.trading_enabled:
+        now = datetime.datetime.now().replace(microsecond=0)
+        notify_msg = str(now) + "\n" + msg.replace(";","\n").replace(": ",":\n")
+        lineNotify.line_notify(notify_msg)
 
 def clear_flags():
-    global already_buyed, meet_expected_price, emergency_sell, is_frozen, frozen_time, is_closed
+    global already_buyed, meet_expected_price, emergency_sell, is_frozen, frozen_time, is_closed, is_first_of_candle
     already_buyed=False
     meet_expected_price=False
     emergency_sell=False
     is_frozen=False
     frozen_time=time.time()
     is_closed=False
+    is_first_of_candle=True
 
 def set_freeze(now):
     global is_frozen, frozen_time
@@ -122,7 +124,6 @@ while True:
         if is_closed and (start_time < now < end_time):
             is_closed = False
             clear_flags()
-            start_log()
 
         # 거래 가능 시간: 봉시작 ~ 봉종료 20초전
         if start_time < now < end_time:
@@ -134,17 +135,21 @@ while True:
             expected_price = target_price * (1 + expected_rate)
             if (not already_buyed) or emergency_sell_price is None:
                 emergency_sell_price = target_price * (1 - emergency_sell_rate)
-            log(
-                "(no-event) market={};current_price={};target_price={};expected_price={};emergency_sell_price={};candle_open={}"
-                .format(
-                    market,
-                    human_readable(current_price),
-                    human_readable(target_price),
-                    human_readable(expected_price),
-                    human_readable(emergency_sell_price),
-                    human_readable(candle_open)
+
+            if is_first_of_candle:
+                log_and_notify(
+                    "candle begin: market={};current_price={};target_price={};expected_price={};emergency_sell_price={};candle_open={}"
+                    .format(
+                        market,
+                        human_readable(current_price),
+                        human_readable(target_price),
+                        human_readable(expected_price),
+                        human_readable(emergency_sell_price),
+                        human_readable(candle_open)
+                        )
                     )
-                )
+                is_first_of_candle=False
+
             log(
                 "(no-event) diff from current: target_price={};expected_price={};emergency_sell_price={}"
                 .format(
