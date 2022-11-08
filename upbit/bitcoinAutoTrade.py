@@ -62,6 +62,9 @@ def log_and_notify(msg):
         notify_msg = str(now) + "\n" + msg.replace(";","\n").replace(": ",":\n")
         lineNotify.line_notify(notify_msg)
 
+def diff_percent(n):
+    return round((n - 1) * 100, 2)
+
 def clear_flags():
     global already_buyed, meet_expected_price, emergency_sell, is_frozen, frozen_time, is_closed, is_first_of_candle
     already_buyed=False
@@ -151,10 +154,11 @@ while True:
                 is_first_of_candle=False
 
             log(
-                "(no-event) diff from current: target_price={};expected_price={};emergency_sell_price={}"
+                "(no-event) diff from current: current_price={};target_price={}({}%);expected_price={}({}%);emergency_sell_price={}"
                 .format(
-                    human_readable(target_price - current_price),
-                    human_readable(expected_price - current_price),
+                    human_readable(current_price),
+                    human_readable(target_price - current_price), diff_percent(target_price / current_price),
+                    human_readable(expected_price - current_price), diff_percent(expected_price / current_price),
                     human_readable(emergency_sell_price - current_price),
                 )
             )
