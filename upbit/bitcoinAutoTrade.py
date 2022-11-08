@@ -185,11 +185,11 @@ while True:
                 partial_crypto = get_balance(symbol) * partial_sell_rate
                 if partial_crypto > 0.00008:
                     log_and_notify(
-                        "sell half on expected price: current_price={};expected_price={};partial_crypto={}"
+                        "sell partialy on expected price: current_price={};expected_price={};partial_crypto={}"
                         .format(
                             human_readable(current_price),
                             human_readable(expected_price),
-                            human_readable(partial_crypto)
+                            partial_crypto
                         )
                     )
                     if debug_settings.trading_enabled:
