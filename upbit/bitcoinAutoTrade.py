@@ -6,6 +6,7 @@ import traceback
 import lineNotify
 import debug_settings
 import trading_settings
+import yaml
 
 access = os.getenv('UPBIT_ACCESS')
 secret = os.getenv('UPBIT_SECRET')
@@ -90,6 +91,20 @@ def start_log():
             .format(market, k, expected_rate, partial_sell_rate, emergency_sell_rate, candle_interval)
         )
 
+def save_status(status):
+    with open(status_file, "w") as f:
+        yaml.dump(status, f)
+
+def load_status():
+    try:
+        with open(status_file, "r") as f:
+            status = yaml.load(f, Loader=yaml.FullLoader)
+    except:
+        status = {}
+    return status
+
+status_file = "trading-status.yml"
+
 # 각종 설정
 symbol = trading_settings.symbol
 k = trading_settings.k
@@ -116,6 +131,7 @@ start_log()
 
 # 자동매매 시작
 clear_flags()
+status = load_status()
 
 while True:
     try:
@@ -240,6 +256,7 @@ while True:
 
                 # 현재 잔액 로그
                 total_krw = upbit.get_balance_t()
+                latest_krw = status['latest_krw']
                 if (latest_krw is None):
                     latest_krw = total_krw
                 total_krw_diff = total_krw - latest_krw
@@ -253,6 +270,8 @@ while True:
                 )
                 latest_krw = total_krw
                 is_closed= True
+                status['latest_krw']=latest_krw
+                save_status()
 
         time.sleep(10)
     except Exception as e:

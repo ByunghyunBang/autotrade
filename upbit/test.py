@@ -28,8 +28,12 @@ def save_status(status):
         yaml.dump(status, f)
 
 def load_status():
-    with open(status_file, "r") as f:
-        return yaml.load(f, Loader=yaml.FullLoader)
+    try:
+        with open(status_file, "r") as f:
+            status = yaml.load(f, Loader=yaml.FullLoader)
+    except:
+        status = {}
+    return status
 
 status_file = "trading-status.yml"
 
@@ -66,6 +70,7 @@ print(get_middle(df.iloc[0]['high'],df.iloc[0]['low']))
 status = load_status()
 print(status)
 
-status["krw_balance"] = 5555
+status['krw_balance'] = 5555
 save_status(status)
 
+print(status['eee'])
