@@ -272,7 +272,7 @@ while True:
                 latest_krw = total_krw
                 is_closed= True
                 status['latest_krw']=latest_krw
-                save_status()
+                save_status(status)
 
         time.sleep(10)
     except Exception as e:
