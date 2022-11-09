@@ -1,6 +1,7 @@
 import pyupbit
 import numpy as np
 import trading_settings
+import pandas as pd
 
 symbol = trading_settings.symbol
 k = trading_settings.k
@@ -17,7 +18,7 @@ candle_interval = trading_settings.candle_interval
 # # candle_interval="minute60"
 # candle_interval="minute240"
 
-test_days=7
+test_days=70
 if candle_interval=="day":
     test_term=test_days
 if candle_interval=="minute240":
@@ -45,6 +46,7 @@ df['range'] = (df['high'] - df['low']) * k
 
 # target(매수가), range 컬럼을 한칸씩 밑으로 내림(.shift(1))
 df['target'] = df['open'] + df['range'].shift(1)
+df['target_p'] = diff_percent(df['target']/df['open'])
 
 df['target_to_high'] = df['high'] - df['target']
 df['target_to_high_p'] = diff_percent(df['target_to_high'] / df['target'] + 1)
@@ -72,10 +74,19 @@ df['hpr'] = df['ror'].cumprod()
 
 df['hpr_percent'] = diff_percent(df['hpr'])
 
-df = df.drop(columns=['volume'])
+# df = df.drop(columns=['volume'])
 df = df.drop(columns=['value'])
+df = df.drop(columns=['ror'])
+df = df.drop(columns=['ror_origin'])
+df = df.drop(columns=['hpr'])
+df = df.drop(columns=['target_to_low'])
+df = df.drop(columns=['target_to_high'])
+pd.set_option('display.max_rows', 1000)
+# pd.set_option('display.max_columns', 80)
+
+# print(df)
 print("----------")
-print(df.loc[(df['ror'] != 1)])
+print(df.loc[(df['ror_origin_p'] < -1.5)])
 print("----- 익절조건 -----")
 print(df.loc[(df.target_to_high_p > expected_rate_p), :])
 
