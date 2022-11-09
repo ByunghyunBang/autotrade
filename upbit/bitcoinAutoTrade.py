@@ -100,7 +100,7 @@ def load_status():
         with open(status_file, "r") as f:
             status = yaml.load(f, Loader=yaml.FullLoader)
     except:
-        status = {}
+        status = { 'latest_krw': None}
     return status
 
 status_file = "trading-status.yml"
@@ -157,14 +157,15 @@ while True:
 
             if is_first_of_candle:
                 log_and_notify(
-                    "candle begin: market={};current_price={};target_price={};expected_price={};emergency_sell_price={};candle_open={}"
+                    "candle begin: market={};current_price={};target_price={};expected_price={};emergency_sell_price={};candle_open={};latest_krw={}"
                     .format(
                         market,
                         human_readable(current_price),
                         human_readable(target_price),
                         human_readable(expected_price),
                         human_readable(emergency_sell_price),
-                        human_readable(candle_open)
+                        human_readable(candle_open),
+                        human_readable(status['latest_krw'])
                         )
                     )
                 is_first_of_candle=False
