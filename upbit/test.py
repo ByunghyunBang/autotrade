@@ -1,5 +1,6 @@
 import pyupbit
 import os
+import yaml
 
 def get_balance(ticker):
     """잔고 조회"""
@@ -21,6 +22,16 @@ def get_target_price2(ohlcv_day2, k):
     base = get_middle(df.iloc[0]['close'],df.iloc[1]['low'],0.6)
     target_price = base + (df.iloc[0]['high'] - df.iloc[0]['low']) * k
     return target_price
+
+def save_status(status):
+    with open(status_file, "w") as f:
+        yaml.dump(status, f)
+
+def load_status():
+    with open(status_file, "r") as f:
+        return yaml.load(f, Loader=yaml.FullLoader)
+
+status_file = "trading-status.yml"
 
 access = os.getenv('UPBIT_ACCESS')
 secret = os.getenv('UPBIT_SECRET')
@@ -51,3 +62,10 @@ print(get_middle(df.iloc[0]['high'],df.iloc[0]['low']))
 # if btc > 0.00008:
 #     print("매도:{}".format(btc))
 #     upbit.sell_market_order("KRW-BTC", btc)
+
+status = load_status()
+print(status)
+
+status["krw_balance"] = 5555
+save_status(status)
+
