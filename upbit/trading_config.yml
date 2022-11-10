@@ -1,5 +1,5 @@
 symbol: "ETH"
-k: 0.4
+k: 0.5
 expected_rate_p: 2.0 # 익절 기준
 partial_sell_rate_p: 100 # 익절시 매도비율 %
 emergency_sell_rate_p: 2.5
