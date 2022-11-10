@@ -279,8 +279,8 @@ while True:
                 status['latest_krw']=latest_krw
                 save_status(status)
 
-        time.sleep(10)
+        time.sleep(5)
     except Exception as e:
         log(e)
         traceback.print_exc()
-        time.sleep(10)
+        time.sleep(5)
