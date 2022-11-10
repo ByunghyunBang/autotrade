@@ -67,14 +67,13 @@ def diff_percent(n):
     return round((n - 1) * 100, 2)
 
 def clear_flags():
-    global already_buyed, meet_expected_price, emergency_sell, is_frozen, frozen_time, is_closed, is_first_of_candle
+    global already_buyed, meet_expected_price, emergency_sell, is_frozen, frozen_time, is_closed
     already_buyed=False
     meet_expected_price=False
     emergency_sell=False
     is_frozen=False
     frozen_time=time.time()
     is_closed=False
-    is_first_of_candle=True
 
 def set_freeze(now):
     global is_frozen, frozen_time
@@ -87,6 +86,11 @@ def human_readable(num):
 def start_log():
     if debug_settings.trading_enabled:
         log_and_notify(
+            "start: market={};k={};expected_rate={};partial_sell_rate={};emergency_sell_rate={};candle_interval={}"
+            .format(market, k, expected_rate, partial_sell_rate, emergency_sell_rate, candle_interval)
+        )
+    else:
+        log(
             "start: market={};k={};expected_rate={};partial_sell_rate={};emergency_sell_rate={};candle_interval={}"
             .format(market, k, expected_rate, partial_sell_rate, emergency_sell_rate, candle_interval)
         )
@@ -117,6 +121,8 @@ if candle_interval=="minute240":
     time_delta=datetime.timedelta(minutes=240)
 elif candle_interval=="minute60":
     time_delta=datetime.timedelta(minutes=60)
+elif candle_interval=="minute1":
+    time_delta=datetime.timedelta(minutes=1)
 elif candle_interval=="day":
     time_delta=datetime.timedelta(days=1)
 
@@ -127,11 +133,11 @@ latest_krw = None
 
 # 로그인
 upbit = pyupbit.Upbit(access, secret)
-start_log()
 
 # 자동매매 시작
 clear_flags()
 status = load_status()
+is_closed = True
 
 def candle_begin_event():
     global current_price,target_price,expected_price,emergency_sell_price,candle_open,status
@@ -141,6 +147,7 @@ def candle_begin_event():
     expected_price = target_price * (1 + expected_rate)
     emergency_sell_price = target_price * (1 - emergency_sell_rate)
 
+    start_log()
     log_and_notify(
         "candle begin: market={};current_price={};target_price={};expected_price={};emergency_sell_price={};candle_open={};latest_krw={}"
         .format(
@@ -160,27 +167,23 @@ while True:
         start_time = get_start_time(market)
         end_time = start_time + time_delta - datetime.timedelta(seconds=20)
 
-        # 일일 거래 시작 시점에 flag reset
-        if is_closed and (start_time < now < end_time):
-            is_closed = False
-            clear_flags()
-
         # 거래 가능 시간: 봉시작 ~ 봉종료 20초전
         if start_time < now < end_time:
 
             current_price = get_current_price(market)
 
-            if is_first_of_candle:
+            if is_closed:
+                clear_flags()
                 candle_begin_event()
-                is_first_of_candle=False
+                is_closed=False
 
             log(
-                "(no-event) diff from current: current_price={};target_price={}({}%);expected_price={}({}%);emergency_sell_price={}"
+                "(no-event) diff from current: current_price={};target_price={}({}%);expected_price={}({}%);emergency_sell_price={}({}%)"
                 .format(
                     human_readable(current_price),
                     human_readable(target_price - current_price), diff_percent(target_price / current_price),
                     human_readable(expected_price - current_price), diff_percent(expected_price / current_price),
-                    human_readable(emergency_sell_price - current_price),
+                    human_readable(emergency_sell_price - current_price), diff_percent(emergency_sell_price / current_price),
                 )
             )
 
