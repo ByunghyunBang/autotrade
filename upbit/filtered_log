@@ -1,0 +1,1 @@
+grep -v no-event output.log
