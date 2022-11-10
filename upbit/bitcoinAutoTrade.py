@@ -133,6 +133,21 @@ start_log()
 clear_flags()
 status = load_status()
 
+def candle_begin_event():
+    global current_price,target_price,expected_price,emergency_sell_price,candle_open,status
+    log_and_notify(
+    "candle begin: market={};current_price={};target_price={};expected_price={};emergency_sell_price={};candle_open={};latest_krw={}"
+    .format(
+        market,
+        human_readable(current_price),
+        human_readable(target_price),
+        human_readable(expected_price),
+        human_readable(emergency_sell_price),
+        human_readable(candle_open),
+        human_readable(status['latest_krw'])
+        )
+    )
+
 while True:
     try:
         now = datetime.datetime.now()
@@ -146,16 +161,16 @@ while True:
 
         # 거래 가능 시간: 봉시작 ~ 봉종료 20초전
         if start_time < now < end_time:
-            ohlcv_candle2 = pyupbit.get_ohlcv(market, interval=candle_interval, count=2)
-            candle_open = get_candle_open(ohlcv_candle2)
-            target_price = get_target_price(ohlcv_candle2, k)
-            # target_price = get_target_price2(ohlcv_candle2, k)
+
             current_price = get_current_price(market)
-            expected_price = target_price * (1 + expected_rate)
-            if (not already_buyed) or emergency_sell_price is None:
-                emergency_sell_price = target_price * (1 - emergency_sell_rate)
 
             if is_first_of_candle:
+                ohlcv_candle2 = pyupbit.get_ohlcv(market, interval=candle_interval, count=2)
+                candle_open = get_candle_open(ohlcv_candle2)
+                target_price = get_target_price(ohlcv_candle2, k)
+                expected_price = target_price * (1 + expected_rate)
+                emergency_sell_price = target_price * (1 - emergency_sell_rate)
+
                 log_and_notify(
                     "candle begin: market={};current_price={};target_price={};expected_price={};emergency_sell_price={};candle_open={};latest_krw={}"
                     .format(
