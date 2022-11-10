@@ -84,16 +84,14 @@ def human_readable(num):
     return format(int(num), ',')
 
 def start_log():
+    log_str = "start: market={};k={};expected_rate_p={}%;partial_sell_rate_p={}%;emergency_sell_rate_p={}%;candle_interval={}".format(
+                market, k, expected_rate_p, round(partial_sell_rate,2), emergency_sell_rate_p, candle_interval
+                )
+
     if debug_settings.trading_enabled:
-        log_and_notify(
-            "start: market={};k={};expected_rate={};partial_sell_rate={};emergency_sell_rate={};candle_interval={}"
-            .format(market, k, expected_rate, partial_sell_rate, emergency_sell_rate, candle_interval)
-        )
+        log_and_notify(log_str)
     else:
-        log(
-            "start: market={};k={};expected_rate={};partial_sell_rate={};emergency_sell_rate={};candle_interval={}"
-            .format(market, k, expected_rate, partial_sell_rate, emergency_sell_rate, candle_interval)
-        )
+        log(log_str)
 
 def save_status(status):
     with open(status_file, "w") as f:
