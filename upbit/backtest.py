@@ -2,21 +2,39 @@ import pyupbit
 import numpy as np
 import trading_settings
 import pandas as pd
+import datetime
+import yaml
 
-symbol = trading_settings.symbol
-k = trading_settings.k
-expected_rate_p = trading_settings.expected_rate_p
-partial_sell_rate = trading_settings.partial_sell_rate
-emergency_sell_rate_p = trading_settings.emergency_sell_rate_p
-candle_interval = trading_settings.candle_interval
+config_file = "trading_config.yml"
+def load_config():
+    global symbol,k,expected_rate_p,partial_sell_rate,emergency_sell_rate_p
+    global candle_interval,partial_sell_delay
+    global market,expected_rate,emergency_sell_rate,time_delta,latest_krw
 
-# symbol="ETH"
-# k = 0.4
-# expected_rate_p = 3.0
-# partial_sell_rate = 1.0 # 익절시 매도비율
-# emergency_sell_rate_p = 3
-# # candle_interval="minute60"
-# candle_interval="minute240"
+    with open(config_file, "r") as f:
+        config = yaml.load(f, Loader=yaml.FullLoader)
+    symbol = config['symbol']
+    k = config['k']
+    expected_rate_p = config['expected_rate_p']
+    partial_sell_rate = config['partial_sell_rate_p'] / 100
+    emergency_sell_rate_p = config['emergency_sell_rate_p']
+    candle_interval = config['candle_interval']
+    partial_sell_delay = datetime.timedelta(seconds=config['partial_sell_delay_sec'])
+    if candle_interval=="minute240":
+        time_delta=datetime.timedelta(minutes=240)
+    elif candle_interval=="minute60":
+        time_delta=datetime.timedelta(minutes=60)
+    elif candle_interval=="minute1":
+        time_delta=datetime.timedelta(minutes=1)
+    elif candle_interval=="day":
+        time_delta=datetime.timedelta(days=1)
+    market="KRW-{}".format(symbol)
+    expected_rate=expected_rate_p / 100 # 익절 조건 : 매수시점대비 몇% 상승시 매도할 것인가 (일부 매도)
+    emergency_sell_rate=emergency_sell_rate_p / 100
+    latest_krw = None
+
+# 각종 설정
+load_config()
 
 test_days=70
 if candle_interval=="day":
@@ -31,9 +49,6 @@ if candle_interval=="minute5":
     test_term=test_days*24*12
 if candle_interval=="minute1":
     test_term=test_days*24*60
-
-market="KRW-{}".format(symbol)
-emergency_sell_rate = 1 - (emergency_sell_rate_p / 100)
 
 def diff_percent(n):
     return round((n - 1) * 100, 2)

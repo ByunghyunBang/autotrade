@@ -1,0 +1,9 @@
+symbol: "ETH"
+k: 0.4
+# 익절 기준
+expected_rate_p: 2.0
+# 익절시 매도비율 %
+partial_sell_rate_p: 100
+emergency_sell_rate_p: 2.5
+candle_interval: "minute240"
+partial_sell_delay_sec: 600

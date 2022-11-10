@@ -5,7 +5,6 @@ import os
 import traceback
 import lineNotify
 import debug_settings
-import trading_settings
 import yaml
 
 access = os.getenv('UPBIT_ACCESS')
@@ -85,8 +84,8 @@ def human_readable(num):
     return format(int(num), ',')
 
 def start_log():
-    log_str = "start: market={};k={};expected_rate_p={}%;partial_sell_rate_p={}%;emergency_sell_rate_p={}%;candle_interval={}".format(
-                market, k, expected_rate_p, round(partial_sell_rate,2), emergency_sell_rate_p, candle_interval
+    log_str="config: market={};k={};expected_rate_p={}%;partial_sell_rate_p={}%;emergency_sell_rate_p={}%;candle_interval={},partial_sell_delay={}".format(
+                market, k, expected_rate_p, round(partial_sell_rate*100,2), emergency_sell_rate_p, candle_interval,partial_sell_delay
                 )
 
     if debug_settings.trading_enabled:
@@ -94,6 +93,7 @@ def start_log():
     else:
         log(log_str)
 
+status_file = "trading_status.yml"
 def save_status(status):
     with open(status_file, "w") as f:
         yaml.dump(status, f)
@@ -106,30 +106,36 @@ def load_status():
         status = { 'latest_krw': None}
     return status
 
-status_file = "trading-status.yml"
+config_file = "trading_config.yml"
+def load_config():
+    global symbol,k,expected_rate_p,partial_sell_rate,emergency_sell_rate_p
+    global candle_interval,partial_sell_delay
+    global market,expected_rate,emergency_sell_rate,time_delta,latest_krw
+
+    with open(config_file, "r") as f:
+        config = yaml.load(f, Loader=yaml.FullLoader)
+    symbol = config['symbol']
+    k = config['k']
+    expected_rate_p = config['expected_rate_p']
+    partial_sell_rate = config['partial_sell_rate_p'] / 100
+    emergency_sell_rate_p = config['emergency_sell_rate_p']
+    candle_interval = config['candle_interval']
+    partial_sell_delay = datetime.timedelta(seconds=config['partial_sell_delay_sec'])
+    if candle_interval=="minute240":
+        time_delta=datetime.timedelta(minutes=240)
+    elif candle_interval=="minute60":
+        time_delta=datetime.timedelta(minutes=60)
+    elif candle_interval=="minute1":
+        time_delta=datetime.timedelta(minutes=1)
+    elif candle_interval=="day":
+        time_delta=datetime.timedelta(days=1)
+    market="KRW-{}".format(symbol)
+    expected_rate=expected_rate_p / 100 # 익절 조건 : 매수시점대비 몇% 상승시 매도할 것인가 (일부 매도)
+    emergency_sell_rate=emergency_sell_rate_p / 100
+    latest_krw = None
 
 # 각종 설정
-symbol = trading_settings.symbol
-k = trading_settings.k
-expected_rate_p = trading_settings.expected_rate_p
-partial_sell_rate = trading_settings.partial_sell_rate_p / 100
-emergency_sell_rate_p = trading_settings.emergency_sell_rate_p
-candle_interval = trading_settings.candle_interval
-partial_sell_delay = datetime.timedelta(minutes=10)
-
-if candle_interval=="minute240":
-    time_delta=datetime.timedelta(minutes=240)
-elif candle_interval=="minute60":
-    time_delta=datetime.timedelta(minutes=60)
-elif candle_interval=="minute1":
-    time_delta=datetime.timedelta(minutes=1)
-elif candle_interval=="day":
-    time_delta=datetime.timedelta(days=1)
-
-market="KRW-{}".format(symbol)
-expected_rate=expected_rate_p / 100 # 익절 조건 : 매수시점대비 몇% 상승시 매도할 것인가 (일부 매도)
-emergency_sell_rate=emergency_sell_rate_p / 100
-latest_krw = None
+load_config()
 
 # 로그인
 upbit = pyupbit.Upbit(access, secret)
@@ -140,13 +146,13 @@ status = load_status()
 is_closed = True
 
 def candle_begin_event():
+    load_config()
     global current_price,target_price,expected_price,emergency_sell_price,candle_open,status
     ohlcv_candle2 = pyupbit.get_ohlcv(market, interval=candle_interval, count=2)
     candle_open = get_candle_open(ohlcv_candle2)
     target_price = get_target_price(ohlcv_candle2, k)
     expected_price = target_price * (1 + expected_rate)
     emergency_sell_price = target_price * (1 - emergency_sell_rate)
-
     start_log()
     log_and_notify(
         "candle begin: market={};current_price={};target_price={};expected_price={};emergency_sell_price={};candle_open={};latest_krw={}"
@@ -210,23 +216,24 @@ while True:
 
             # 기대이익실현 시점에 일부 매도
             if (not meet_expected_price) and (current_price >= expected_price):
+                meet_expected_price = True
                 time_to_partial_sell = now + partial_sell_delay
                 log_and_notify(
-                    "expected price reached: current_price={};expected_price={};partial_sell_rate_p={}%,partial_crypto={}"
+                    "expected price reached: current_price={};expected_price={};time_to_partial_sell={}"
                     .format(
                         human_readable(current_price),
                         human_readable(expected_price),
-                        round(partial_sell_rate*100,2),
-                        partial_crypto
+                        time_to_partial_sell
                     )
                 )
 
             # 기대이익실현시점보다 약간의 delay 후에 부분매도
-            if time_to_partial_sell is not None and now > time_to_partial_sell:
+            if meet_expected_price and now >= time_to_partial_sell:
                 partial_crypto = get_balance(symbol) * partial_sell_rate
+                partial_crypto = 1
                 if partial_crypto > 0.00008:
                     log_and_notify(
-                        "partial sell on expected price: current_price={};expected_price={};partial_sell_rate_p={}%,partial_crypto={}"
+                        "partial sell on expected price: current_price={};expected_price={};partial_sell_rate_p={}%;partial_crypto={}"
                         .format(
                             human_readable(current_price),
                             human_readable(expected_price),
@@ -282,7 +289,7 @@ while True:
                     latest_krw = total_krw
                 total_krw_diff = total_krw - latest_krw
                 log_and_notify(
-                    "end: balance={};earned={}({}%)"
+                    "end ******************: balance={};earned={}({}%)"
                     .format(
                         human_readable(total_krw),
                         human_readable(total_krw_diff),
