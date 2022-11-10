@@ -67,9 +67,10 @@ def diff_percent(n):
     return round((n - 1) * 100, 2)
 
 def clear_flags():
-    global already_buyed, meet_expected_price, emergency_sell, is_frozen, frozen_time, is_closed
+    global already_buyed, meet_expected_price, time_to_partial_sell, emergency_sell, is_frozen, frozen_time, is_closed
     already_buyed=False
     meet_expected_price=False
+    time_to_partial_sell=None
     emergency_sell=False
     is_frozen=False
     frozen_time=time.time()
@@ -111,9 +112,10 @@ status_file = "trading-status.yml"
 symbol = trading_settings.symbol
 k = trading_settings.k
 expected_rate_p = trading_settings.expected_rate_p
-partial_sell_rate = trading_settings.partial_sell_rate
+partial_sell_rate = trading_settings.partial_sell_rate_p / 100
 emergency_sell_rate_p = trading_settings.emergency_sell_rate_p
 candle_interval = trading_settings.candle_interval
+partial_sell_delay = datetime.timedelta(minutes=10)
 
 if candle_interval=="minute240":
     time_delta=datetime.timedelta(minutes=240)
@@ -208,14 +210,27 @@ while True:
 
             # 기대이익실현 시점에 일부 매도
             if (not meet_expected_price) and (current_price >= expected_price):
+                time_to_partial_sell = now + partial_sell_delay
+                log_and_notify(
+                    "expected price reached: current_price={};expected_price={};partial_sell_rate_p={}%,partial_crypto={}"
+                    .format(
+                        human_readable(current_price),
+                        human_readable(expected_price),
+                        round(partial_sell_rate*100,2),
+                        partial_crypto
+                    )
+                )
+
+            # 기대이익실현시점보다 약간의 delay 후에 부분매도
+            if time_to_partial_sell is not None and now > time_to_partial_sell:
                 partial_crypto = get_balance(symbol) * partial_sell_rate
                 if partial_crypto > 0.00008:
                     log_and_notify(
-                        "partial sell on expected price: current_price={};expected_price={};partial_sell_rate={},partial_crypto={}"
+                        "partial sell on expected price: current_price={};expected_price={};partial_sell_rate_p={}%,partial_crypto={}"
                         .format(
                             human_readable(current_price),
                             human_readable(expected_price),
-                            partial_sell_rate,
+                            round(partial_sell_rate*100,2),
                             partial_crypto
                         )
                     )

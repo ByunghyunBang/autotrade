@@ -25,6 +25,12 @@ if candle_interval=="minute240":
     test_term=test_days*6
 if candle_interval=="minute60":
     test_term=test_days*24
+if candle_interval=="minute10":
+    test_term=test_days*24*6
+if candle_interval=="minute5":
+    test_term=test_days*24*12
+if candle_interval=="minute1":
+    test_term=test_days*24*60
 
 market="KRW-{}".format(symbol)
 emergency_sell_rate = 1 - (emergency_sell_rate_p / 100)
@@ -45,7 +51,7 @@ df['high_rate'] = round((df['high'] - df['open']) / df['open'] * 100, 2)
 df['range'] = (df['high'] - df['low']) * k
 
 # target(매수가), range 컬럼을 한칸씩 밑으로 내림(.shift(1))
-df['target'] = df['open'] + df['range'].shift(1)
+df['target'] = df['close'].shift(1) + df['range'].shift(1)
 df['target_p'] = diff_percent(df['target']/df['open'])
 
 df['target_to_high'] = df['high'] - df['target']
@@ -86,7 +92,8 @@ pd.set_option('display.max_rows', 1000)
 
 # print(df)
 print("----------")
-print(df.loc[(df['ror_origin_p'] < -1.5)])
+print(df)
+# print(df.loc[(df['ror_p'] != 0)])
 print("----- 익절조건 -----")
 print(df.loc[(df.target_to_high_p > expected_rate_p), :])
 
@@ -95,3 +102,5 @@ print("종료가 :",df.iloc[-1].name, df.iloc[-1]['open'])
 
 increased_rate = diff_percent(df.iloc[-1]['open'] / df.iloc[0]['open'])
 print("자연상승률 :",increased_rate)
+print("-----")
+print(df.tail(1))
