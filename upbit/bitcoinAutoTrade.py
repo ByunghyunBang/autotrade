@@ -135,18 +135,24 @@ status = load_status()
 
 def candle_begin_event():
     global current_price,target_price,expected_price,emergency_sell_price,candle_open,status
+    ohlcv_candle2 = pyupbit.get_ohlcv(market, interval=candle_interval, count=2)
+    candle_open = get_candle_open(ohlcv_candle2)
+    target_price = get_target_price(ohlcv_candle2, k)
+    expected_price = target_price * (1 + expected_rate)
+    emergency_sell_price = target_price * (1 - emergency_sell_rate)
+
     log_and_notify(
-    "candle begin: market={};current_price={};target_price={};expected_price={};emergency_sell_price={};candle_open={};latest_krw={}"
-    .format(
-        market,
-        human_readable(current_price),
-        human_readable(target_price),
-        human_readable(expected_price),
-        human_readable(emergency_sell_price),
-        human_readable(candle_open),
-        human_readable(status['latest_krw'])
+        "candle begin: market={};current_price={};target_price={};expected_price={};emergency_sell_price={};candle_open={};latest_krw={}"
+        .format(
+            market,
+            human_readable(current_price),
+            human_readable(target_price),
+            human_readable(expected_price),
+            human_readable(emergency_sell_price),
+            human_readable(candle_open),
+            human_readable(status['latest_krw'])
+            )
         )
-    )
 
 while True:
     try:
@@ -165,24 +171,7 @@ while True:
             current_price = get_current_price(market)
 
             if is_first_of_candle:
-                ohlcv_candle2 = pyupbit.get_ohlcv(market, interval=candle_interval, count=2)
-                candle_open = get_candle_open(ohlcv_candle2)
-                target_price = get_target_price(ohlcv_candle2, k)
-                expected_price = target_price * (1 + expected_rate)
-                emergency_sell_price = target_price * (1 - emergency_sell_rate)
-
-                log_and_notify(
-                    "candle begin: market={};current_price={};target_price={};expected_price={};emergency_sell_price={};candle_open={};latest_krw={}"
-                    .format(
-                        market,
-                        human_readable(current_price),
-                        human_readable(target_price),
-                        human_readable(expected_price),
-                        human_readable(emergency_sell_price),
-                        human_readable(candle_open),
-                        human_readable(status['latest_krw'])
-                        )
-                    )
+                candle_begin_event()
                 is_first_of_candle=False
 
             log(
