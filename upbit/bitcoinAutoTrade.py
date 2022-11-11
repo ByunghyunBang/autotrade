@@ -289,7 +289,7 @@ while True:
                     latest_krw = total_krw
                 total_krw_diff = total_krw - latest_krw
                 log_and_notify(
-                    "end ******************: balance={};earned={}({}%)"
+                    "end: balance={};earned={}({}%);OOOOOOOOOOOOOOOOOOOOOOOOO"
                     .format(
                         human_readable(total_krw),
                         human_readable(total_krw_diff),
