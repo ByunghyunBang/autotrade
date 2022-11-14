@@ -230,7 +230,6 @@ while True:
             # 기대이익실현시점보다 약간의 delay 후에 부분매도
             if meet_expected_price and now >= time_to_partial_sell:
                 partial_crypto = get_balance(symbol) * partial_sell_rate
-                partial_crypto = 1
                 if partial_crypto > 0.00008:
                     log_and_notify(
                         "partial sell on expected price: current_price={};expected_price={};partial_sell_rate_p={}%;partial_crypto={}"
