@@ -4,5 +4,5 @@ max_buy_limit_p: 3.0 # 직전 candle 이 너무 커서 buy price 가 너무 높�
 expected_rate_p: 2.5 # 익절 기준
 partial_sell_rate_p: 100 # 익절시 매도비율 %
 emergency_sell_rate_p: 2.5
-candle_interval: "minute240"
+candle_interval: "day"
 partial_sell_delay_sec: 300
