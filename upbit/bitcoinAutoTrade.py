@@ -26,6 +26,16 @@ def get_target_price2(ohlcv_candle2, k):
     target_price = base + (df.iloc[0]['high'] - df.iloc[0]['low']) * k
     return target_price
 
+def get_target_price3(ohlcv_candle2, k):
+    """변동성 돌파 전략으로 매수 목표가 조회 (어제 변동성 * k 가 max_buy_limit_p 의 변동성을 넘지 않도록 설정 )"""
+    df = ohlcv_candle2
+
+    diff = (df.iloc[0]['high'] - df.iloc[0]['low']) * k
+    max_diff = df.iloc[0]['close'] * (max_buy_limit_p/100)
+
+    target_price = df.iloc[0]['close'] + min(diff, max_diff)
+    return target_price
+
 def get_candle_open(ohlcv_candle2):
     df = ohlcv_candle2
     return df.iloc[1]['open']
@@ -108,7 +118,7 @@ def load_status():
 
 config_file = "trading_config.yml"
 def load_config():
-    global symbol,k,expected_rate_p,partial_sell_rate,emergency_sell_rate_p
+    global symbol,k,expected_rate_p,partial_sell_rate,emergency_sell_rate_p,max_buy_limit_p
     global candle_interval,partial_sell_delay
     global market,expected_rate,emergency_sell_rate,time_delta,latest_krw
 
@@ -116,6 +126,7 @@ def load_config():
         config = yaml.load(f, Loader=yaml.FullLoader)
     symbol = config['symbol']
     k = config['k']
+    max_buy_limit_p = config['max_buy_limit_p']
     expected_rate_p = config['expected_rate_p']
     partial_sell_rate = config['partial_sell_rate_p'] / 100
     emergency_sell_rate_p = config['emergency_sell_rate_p']
@@ -150,7 +161,7 @@ def candle_begin_event():
     global current_price,target_price,expected_price,emergency_sell_price,candle_open,status
     ohlcv_candle2 = pyupbit.get_ohlcv(market, interval=candle_interval, count=2)
     candle_open = get_candle_open(ohlcv_candle2)
-    target_price = get_target_price(ohlcv_candle2, k)
+    target_price = get_target_price3(ohlcv_candle2, k)
     expected_price = target_price * (1 + expected_rate)
     emergency_sell_price = target_price * (1 - emergency_sell_rate)
     start_log()
@@ -230,7 +241,7 @@ while True:
             # 기대이익실현시점보다 약간의 delay 후에 부분매도
             if meet_expected_price and now >= time_to_partial_sell:
                 partial_crypto = get_balance(symbol) * partial_sell_rate
-                if partial_crypto > 0.00008:
+                if partial_crypto > 0.2:
                     log_and_notify(
                         "partial sell on expected price: current_price={};expected_price={};partial_sell_rate_p={}%;partial_crypto={}"
                         .format(

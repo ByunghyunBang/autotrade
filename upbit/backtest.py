@@ -6,7 +6,7 @@ import yaml
 
 config_file = "trading_config.yml"
 def load_config():
-    global symbol,k,expected_rate_p,partial_sell_rate,emergency_sell_rate_p
+    global symbol,k,expected_rate_p,partial_sell_rate,emergency_sell_rate_p,max_buy_limit_p
     global candle_interval,partial_sell_delay
     global market,expected_rate,emergency_sell_rate,time_delta,latest_krw
 
@@ -14,6 +14,7 @@ def load_config():
         config = yaml.load(f, Loader=yaml.FullLoader)
     symbol = config['symbol']
     k = config['k']
+    max_buy_limit_p = config['max_buy_limit_p']
     expected_rate_p = config['expected_rate_p']
     partial_sell_rate = config['partial_sell_rate_p'] / 100
     emergency_sell_rate_p = config['emergency_sell_rate_p']
@@ -35,7 +36,7 @@ def load_config():
 # 각종 설정
 load_config()
 
-test_days=70
+test_days=7
 if candle_interval=="day":
     test_term=test_days
 if candle_interval=="minute240":
@@ -65,7 +66,12 @@ df['high_rate'] = round((df['high'] - df['open']) / df['open'] * 100, 2)
 df['range'] = (df['high'] - df['low']) * k
 
 # target(매수가), range 컬럼을 한칸씩 밑으로 내림(.shift(1))
-df['target'] = df['close'].shift(1) + df['range'].shift(1)
+df['target_original'] = df['close'].shift(1) + df['range'].shift(1)
+df['target'] = np.where(df['close'].shift(1) + df['range'].shift(1) < df['close'].shift(1)*(100+max_buy_limit_p)/100,
+                        df['close'].shift(1) + df['range'].shift(1),
+                        df['close'].shift(1) * (100+max_buy_limit_p)/100
+                        )
+df['target_original_p'] = diff_percent(df['target_original']/df['open'])
 df['target_p'] = diff_percent(df['target']/df['open'])
 
 df['target_to_high'] = df['high'] - df['target']
@@ -107,7 +113,7 @@ pd.set_option('display.max_rows', 1000)
 # print(df)
 print("----------")
 print(df)
-# print(df.loc[(df['ror_p'] != 0)])
+print(df.loc[(df['ror_p'] != 0)])
 print("----- 익절조건 -----")
 print(df.loc[(df.target_to_high_p > expected_rate_p), :])
 
