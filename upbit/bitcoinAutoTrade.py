@@ -134,7 +134,7 @@ def load_config():
     symbol = config['symbol']
     k = config['k']
     max_buy_limit_p = config['max_buy_limit_p']
-    ignore_k_buy_p = config['ignore_k_buy_p']
+    # ignore_k_buy_p = config['ignore_k_buy_p']
     expected_rate_p = config['expected_rate_p']
     partial_sell_rate = config['partial_sell_rate_p'] / 100
     emergency_sell_rate_p = config['emergency_sell_rate_p']
