@@ -36,6 +36,12 @@ def get_target_price3(ohlcv_candle2, k):
     target_price = df.iloc[0]['close'] + min(diff, max_diff)
     return target_price
 
+def get_emergency_sell_price(ohlcv_candle2):
+    """ 손절 시점 구하기 : 매수이후 최고점 대비 일정비율 하락시점 """
+    df = ohlcv_candle2
+    emergency_sell_price = df.iloc[0]['high'] * emergency_sell_rate
+    return emergency_sell_price
+
 def get_candle_open(ohlcv_candle2):
     df = ohlcv_candle2
     return df.iloc[1]['open']
@@ -118,7 +124,8 @@ def load_status():
 
 config_file = "trading_config.yml"
 def load_config():
-    global symbol,k,expected_rate_p,partial_sell_rate,emergency_sell_rate_p,max_buy_limit_p
+    global symbol,k,expected_rate_p,max_buy_limit_p,ignore_k_buy_p
+    global partial_sell_rate,emergency_sell_rate_p
     global candle_interval,partial_sell_delay
     global market,expected_rate,emergency_sell_rate,time_delta,latest_krw
 
@@ -127,6 +134,7 @@ def load_config():
     symbol = config['symbol']
     k = config['k']
     max_buy_limit_p = config['max_buy_limit_p']
+    ignore_k_buy_p = config['ignore_k_buy_p']
     expected_rate_p = config['expected_rate_p']
     partial_sell_rate = config['partial_sell_rate_p'] / 100
     emergency_sell_rate_p = config['emergency_sell_rate_p']
@@ -142,7 +150,7 @@ def load_config():
         time_delta=datetime.timedelta(days=1)
     market="KRW-{}".format(symbol)
     expected_rate=expected_rate_p / 100 # 익절 조건 : 매수시점대비 몇% 상승시 매도할 것인가 (일부 매도)
-    emergency_sell_rate=emergency_sell_rate_p / 100
+    emergency_sell_rate= 1 - emergency_sell_rate_p / 100
     latest_krw = None
 
 # 각종 설정
@@ -163,7 +171,7 @@ def candle_begin_event():
     candle_open = get_candle_open(ohlcv_candle2)
     target_price = get_target_price3(ohlcv_candle2, k)
     expected_price = target_price * (1 + expected_rate)
-    emergency_sell_price = target_price * (1 - emergency_sell_rate)
+    emergency_sell_price = target_price * emergency_sell_rate
     start_log()
     log_and_notify(
         "candle begin: market={};current_price={};target_price={};expected_price={};emergency_sell_price={};candle_open={};latest_krw={}"
@@ -187,7 +195,9 @@ while True:
         # 거래 가능 시간: 봉시작 ~ 봉종료 20초전
         if start_time < now < end_time:
 
+            ohlcv_candle2 = pyupbit.get_ohlcv(market, interval=candle_interval, count=2)
             current_price = get_current_price(market)
+            emergency_sell_price = get_emergency_sell_price(ohlcv_candle2)
 
             if is_closed:
                 clear_flags()
@@ -223,7 +233,7 @@ while True:
                     if debug_settings.trading_enabled:
                         upbit.buy_market_order(market, krw*0.9995)
                     already_buyed = True
-                    emergency_sell_price = current_price * (1 - emergency_sell_rate)
+                    emergency_sell_price = current_price * emergency_sell_rate
 
             # 기대이익실현 시점에 일부 매도
             if (not meet_expected_price) and (current_price >= expected_price):
@@ -311,7 +321,7 @@ while True:
                 status['latest_krw']=latest_krw
                 save_status(status)
 
-        time.sleep(5)
+        time.sleep(1)
     except Exception as e:
         log(e)
         traceback.print_exc()
