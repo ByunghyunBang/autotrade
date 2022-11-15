@@ -1,8 +1,9 @@
 symbol: "ETH"
 k: 0.5
 max_buy_limit_p: 3.0 # 직전 candle 이 너무 커서 buy price 가 너무 높은 것을 방지하기 위한 상한선
-expected_rate_p: 2.5 # 익절 기준
+# ignore_k_buy_p: 1.5 # k 무시하고 전일종가대비 일정비율이상 상승하면 매수
+expected_rate_p: 2.0 # 익절 기준
 partial_sell_rate_p: 100 # 익절시 매도비율 %
-emergency_sell_rate_p: 2.5
-candle_interval: "day"
+emergency_sell_rate_p: 2.0
+candle_interval: "minute240"
 partial_sell_delay_sec: 300
