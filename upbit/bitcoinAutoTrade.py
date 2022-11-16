@@ -67,6 +67,11 @@ def get_current_price(market):
     """현재가 조회"""
     return pyupbit.get_orderbook(ticker=market)["orderbook_units"][0]["ask_price"]
 
+def get_total_balance_krw_and_crypto_with_locked(market, current_price):
+    total_krw = upbit.get_balance_t()
+    total_crypto = upbit.get_balance_t(market)
+    return total_krw + total_crypto * current_price
+
 def log(msg):
     now = datetime.datetime.now()
     print(now, msg)
@@ -174,11 +179,12 @@ def candle_begin_event():
     emergency_sell_price = target_price * emergency_sell_rate
     start_log()
     log_and_notify(
-        "candle begin: market={};current_price={};target_price={};expected_price={};emergency_sell_price={};candle_open={};latest_krw={}"
+        "candle begin: market={};current_price={};target_price={}({}%);expected_price={};emergency_sell_price={};candle_open={};latest_krw={}"
         .format(
             market,
             human_readable(current_price),
             human_readable(target_price),
+            diff_percent(target_price / current_price),
             human_readable(expected_price),
             human_readable(emergency_sell_price),
             human_readable(candle_open),
@@ -303,7 +309,7 @@ while True:
                         time.sleep(5) # Waiting order completed
 
                 # 현재 잔액 로그
-                total_krw = upbit.get_balance_t()
+                total_krw = get_total_balance_krw_and_crypto_with_locked(market,current_price)
                 latest_krw = status['latest_krw']
                 if (latest_krw is None):
                     latest_krw = total_krw
