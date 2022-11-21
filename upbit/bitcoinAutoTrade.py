@@ -129,7 +129,7 @@ def load_status():
 
 config_file = "trading_config.yml"
 def load_config():
-    global symbol,k,expected_rate_p,max_buy_limit_p,ignore_k_buy_p
+    global symbol,k,expected_rate_p,max_buy_limit_p,ignore_k_buy_p,expected_k
     global partial_sell_rate,emergency_sell_rate_p
     global candle_interval,partial_sell_delay
     global market,expected_rate,emergency_sell_rate,time_delta,latest_krw
@@ -140,6 +140,7 @@ def load_config():
     k = config['k']
     max_buy_limit_p = config['max_buy_limit_p']
     # ignore_k_buy_p = config['ignore_k_buy_p']
+    expected_k = config['expected_k']
     expected_rate_p = config['expected_rate_p']
     partial_sell_rate = config['partial_sell_rate_p'] / 100
     emergency_sell_rate_p = config['emergency_sell_rate_p']

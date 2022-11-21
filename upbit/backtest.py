@@ -6,7 +6,7 @@ import yaml
 
 config_file = "trading_config.yml"
 def load_config():
-    global symbol,k,expected_rate_p,max_buy_limit_p,ignore_k_buy_p
+    global symbol,k,expected_rate_p,max_buy_limit_p,ignore_k_buy_p,expected_k
     global partial_sell_rate,emergency_sell_rate_p
     global candle_interval,partial_sell_delay
     global market,expected_rate,emergency_sell_rate,time_delta,latest_krw
@@ -15,6 +15,7 @@ def load_config():
         config = yaml.load(f, Loader=yaml.FullLoader)
     symbol = config['symbol']
     k = config['k']
+    expected_k = config['expected_k']
     max_buy_limit_p = config['max_buy_limit_p']
     # ignore_k_buy_p = config['ignore_k_buy_p']
     expected_rate_p = config['expected_rate_p']
@@ -38,7 +39,7 @@ def load_config():
 # 각종 설정
 load_config()
 
-test_days=70
+test_days=30
 if candle_interval=="day":
     test_term=test_days
 if candle_interval=="minute240":
@@ -78,6 +79,9 @@ df['target_original'] = df['close'].shift(1) + df['range_k'].shift(1)
 # get_target_price
 df['target'] = df['close'].shift(1) + df['range_k'].shift(1)
 
+# get_target_price
+df['expected_price'] = df['close'].shift(1) + df['range'].shift(1) * expected_k
+
 # get_target_price3
 # df['target'] = np.where(df['close'].shift(1) + df['range_k'].shift(1) < df['close'].shift(1)*(100+max_buy_limit_p)/100,
 #                         df['close'].shift(1) + df['range_k'].shift(1),
@@ -89,6 +93,7 @@ df['target'] = df['close'].shift(1) + df['range_k'].shift(1)
 
 df['target_original_p'] = diff_percent(df['target_original']/df['open'])
 df['target_p'] = diff_percent(df['target']/df['open'])
+df['expected_price_p_to_target_p'] = round(df['range'].shift(1) * expected_k/df['close'].shift(1)*100,2) - df['target_p']
 
 df['target_to_high'] = df['high'] - df['target']
 df['target_to_high_p'] = diff_percent(df['target_to_high'] / df['target'] + 1)
@@ -105,8 +110,11 @@ df['ror_origin'] = df['ror']
 # 손절 로직 반영
 df['ror'] = np.where(df['ror'] > emergency_sell_rate, df['ror'], emergency_sell_rate)
 
-# 익절 로직 반영
-df['ror'] = np.where(df['target_to_high_p'] > expected_rate_p, get_middle(df['ror'], expected_rate, partial_sell_rate), df['ror'])
+# 익절 로직 반영 (%기준)
+# df['ror'] = np.where(df['target_to_high_p'] > expected_rate_p, get_middle(df['ror'], expected_rate, partial_sell_rate), df['ror'])
+
+# 익절 로직 반영 (k기준)
+df['ror'] = np.where(df['target_to_high_p'] > df['expected_price_p_to_target_p'], df['expected_price_p_to_target_p']/100+1, df['ror'])
 
 df['ror_origin_p'] = diff_percent(df['ror_origin'])
 df['ror_p'] = diff_percent(df['ror'])
@@ -132,7 +140,7 @@ print(df)
 print("----거래 일어난경우만------")
 print(df.loc[(df['ror_p'] != 0)])
 print("----- 익절조건 -----")
-print(df.loc[(df.target_to_high_p > expected_rate_p), :])
+print(df.loc[(df['high'] > df['expected_price'])])
 
 print("시작가 :",df.iloc[0].name, df.iloc[0]['open'])
 print("종료가 :",df.iloc[-1].name, df.iloc[-1]['open'])
