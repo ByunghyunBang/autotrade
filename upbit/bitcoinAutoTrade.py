@@ -67,6 +67,9 @@ def get_current_price(market):
     """현재가 조회"""
     return pyupbit.get_orderbook(ticker=market)["orderbook_units"][0]["ask_price"]
 
+def get_expected_price():
+    return target_price * (1 + expected_rate)
+
 def get_total_balance_krw_and_crypto_with_locked(market, current_price):
     total_krw = upbit.get_balance_t()
     total_crypto = upbit.get_balance_t(market)
@@ -176,7 +179,7 @@ def candle_begin_event():
     ohlcv_candle2 = pyupbit.get_ohlcv(market, interval=candle_interval, count=2)
     candle_open = get_candle_open(ohlcv_candle2)
     target_price = get_target_price3(ohlcv_candle2, k)
-    expected_price = target_price * (1 + expected_rate)
+    expected_price = get_expected_price()
     emergency_sell_price = target_price * emergency_sell_rate
     start_log()
     log_and_notify(
