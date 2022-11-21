@@ -112,8 +112,8 @@ def human_readable(num):
     return format(int(num), ',')
 
 def start_log():
-    log_str="config: market={};k={};expected_rate_p={}%;partial_sell_rate_p={}%;emergency_sell_rate_p={}%;candle_interval={};partial_sell_delay={}".format(
-                market, k, expected_rate_p, round(partial_sell_rate*100,2), emergency_sell_rate_p, candle_interval,partial_sell_delay
+    log_str="config: market={};k={};expected_k={};expected_rate_p={}%;partial_sell_rate_p={}%;emergency_sell_rate_p={}%;candle_interval={};partial_sell_delay={}".format(
+                market, k, expected_k, expected_rate_p, round(partial_sell_rate*100,2), emergency_sell_rate_p, candle_interval,partial_sell_delay
                 )
 
     if debug_settings.trading_enabled:
