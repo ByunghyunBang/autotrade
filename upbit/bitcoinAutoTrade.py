@@ -36,6 +36,13 @@ def get_target_price3(ohlcv_candle2, k):
     target_price = df.iloc[0]['close'] + min(diff, max_diff)
     return target_price
 
+def get_expected_price():
+    return target_price * (1 + expected_rate)
+
+def get_expected_price2(ohlcv_candle2):
+    df = ohlcv_candle2
+    return df.iloc[0]['close'] + (df.iloc[0]['high'] - df.iloc[0]['low']) * expected_k
+
 def get_emergency_sell_price(ohlcv_candle2):
     """ 손절 시점 구하기 : 매수이후 최고점 대비 일정비율 하락시점 """
     df = ohlcv_candle2
@@ -66,9 +73,6 @@ def get_balance(ticker):
 def get_current_price(market):
     """현재가 조회"""
     return pyupbit.get_orderbook(ticker=market)["orderbook_units"][0]["ask_price"]
-
-def get_expected_price():
-    return target_price * (1 + expected_rate)
 
 def get_total_balance_krw_and_crypto_with_locked(market, current_price):
     total_krw = upbit.get_balance_t()
@@ -179,7 +183,8 @@ def candle_begin_event():
     ohlcv_candle2 = pyupbit.get_ohlcv(market, interval=candle_interval, count=2)
     candle_open = get_candle_open(ohlcv_candle2)
     target_price = get_target_price3(ohlcv_candle2, k)
-    expected_price = get_expected_price()
+    # expected_price = get_expected_price()
+    expected_price = get_expected_price2(ohlcv_candle2)
     emergency_sell_price = target_price * emergency_sell_rate
     start_log()
     log_and_notify(
