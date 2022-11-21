@@ -188,13 +188,14 @@ def candle_begin_event():
     emergency_sell_price = target_price * emergency_sell_rate
     start_log()
     log_and_notify(
-        "candle begin: market={};current_price={};target_price={}({}%);expected_price={};emergency_sell_price={};candle_open={};latest_krw={}"
+        "candle begin: market={};current_price={};target_price={}({}%);expected_price={}({}%);emergency_sell_price={};candle_open={};latest_krw={}"
         .format(
             market,
             human_readable(current_price),
             human_readable(target_price),
             diff_percent(target_price / current_price),
             human_readable(expected_price),
+            diff_percent(expected_price / current_price),
             human_readable(emergency_sell_price),
             human_readable(candle_open),
             human_readable(status['latest_krw'])
