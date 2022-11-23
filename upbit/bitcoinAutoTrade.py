@@ -94,7 +94,7 @@ def diff_percent(n):
     return round((n - 1) * 100, 2)
 
 def clear_flags():
-    global already_buyed, meet_expected_price, time_to_partial_sell, emergency_sell, is_frozen, frozen_time, is_closed
+    global already_buyed, meet_expected_price, time_to_partial_sell, emergency_sell, is_frozen, frozen_time, is_closed, partial_sell_done
     already_buyed=False
     meet_expected_price=False
     time_to_partial_sell=None
@@ -102,6 +102,7 @@ def clear_flags():
     is_frozen=False
     frozen_time=time.time()
     is_closed=False
+    partial_sell_done=False
 
 def set_freeze(now):
     global is_frozen, frozen_time
@@ -264,8 +265,8 @@ while True:
                     )
                 )
 
-            # 기대이익실현시점보다 약간의 delay 후에 부분매도
-            if meet_expected_price and now >= time_to_partial_sell:
+            # 기대이익실현시점보다 약간의 delay 후에 부분매도 (기대이익실현시점보다 아래로 떨어지는 순간에도 매도)
+            if meet_expected_price and not partial_sell_done and (now >= time_to_partial_sell or current_price < expected_price):
                 partial_crypto = get_balance(symbol) * partial_sell_rate
                 total_krw = get_total_balance_krw_and_crypto_with_locked(market, current_price)
                 if partial_crypto > 0.2:
@@ -281,7 +282,7 @@ while True:
                     )
                     if debug_settings.trading_enabled:
                         upbit.sell_market_order(market, partial_crypto)
-                    meet_expected_price=True
+                    partial_sell_done=True
 
             # 손절 : 지정된 손절시점에서 전량매도
             if (current_price <= emergency_sell_price):
@@ -290,7 +291,7 @@ while True:
                     total_krw = get_total_balance_krw_and_crypto_with_locked(market, current_price)
                     log_and_notify("emergency sell: current_price={};crypto={};crypto_balance={};total_krw={}"
                         .format(
-                            human_readable(current_price), 
+                            human_readable(current_price),
                             crypto,
                             human_readable(current_price * crypto),
                             human_readable(total_krw)
