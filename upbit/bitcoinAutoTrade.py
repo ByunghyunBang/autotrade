@@ -267,14 +267,16 @@ while True:
             # 기대이익실현시점보다 약간의 delay 후에 부분매도
             if meet_expected_price and now >= time_to_partial_sell:
                 partial_crypto = get_balance(symbol) * partial_sell_rate
+                total_krw = get_total_balance_krw_and_crypto_with_locked(market, current_price)
                 if partial_crypto > 0.2:
                     log_and_notify(
-                        "partial sell on expected price: current_price={};expected_price={};partial_sell_rate_p={}%;partial_crypto={}"
+                        "partial sell on expected price: current_price={};expected_price={};partial_sell_rate_p={}%;partial_crypto={};total_krw={}"
                         .format(
                             human_readable(current_price),
                             human_readable(expected_price),
                             round(partial_sell_rate*100,2),
-                            partial_crypto
+                            partial_crypto,
+                            human_readable(total_krw),
                         )
                     )
                     if debug_settings.trading_enabled:
@@ -285,7 +287,7 @@ while True:
             if (current_price <= emergency_sell_price):
                 crypto = get_balance(symbol)
                 if crypto > 0.00008:
-                    total_krw = upbit.get_balance_t()
+                    total_krw = get_total_balance_krw_and_crypto_with_locked(market, current_price)
                     log_and_notify("emergency sell: current_price={};crypto={};crypto_balance={};total_krw={}"
                         .format(
                             human_readable(current_price), 
@@ -303,7 +305,7 @@ while True:
             # 종료 시점에 전량매도
             if not is_closed:
                 crypto = get_balance(symbol)
-                total_krw = upbit.get_balance_t()
+                total_krw = get_total_balance_krw_and_crypto_with_locked(market, current_price)
                 if crypto > 0.00008:
                     log_and_notify(
                         "closing sell: current_price={};crypto={};crypto_balance={};total_krw={}"
