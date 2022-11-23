@@ -79,7 +79,7 @@ df['target_original'] = df['close'].shift(1) + df['range_k'].shift(1)
 # get_target_price
 df['target'] = df['close'].shift(1) + df['range_k'].shift(1)
 
-# get_target_price
+# get_expected_price
 df['expected_price'] = df['close'].shift(1) + df['range'].shift(1) * expected_k
 
 # get_target_price3
