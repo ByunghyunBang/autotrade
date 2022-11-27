@@ -1,1 +1,1 @@
-nohup python3 -u bitcoinAutoTrade.py >> output.log &
+nohup python3 -u cryptoAutoTrade.py >> output.log &
