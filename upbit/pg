@@ -1,1 +1,1 @@
-ps -ef|grep bitcoinAutoTrade
+ps -ef|grep AutoTrade
