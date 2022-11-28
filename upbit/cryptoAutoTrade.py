@@ -154,6 +154,7 @@ def candle_begin_event():
     global current_price,target_price,expected_price,emergency_sell_price,candle_open,status
     global time_to_buy,time_to_sell,target_price_to_buy,target_price_to_sell
     ohlcv_candle2 = pyupbit.get_ohlcv(market, interval=candle_interval, count=2)
+    current_price = get_current_price(market)
     candle_open = get_candle_open(ohlcv_candle2)
     krw_balance = get_balance("KRW")
     crypto_balance = get_balance(symbol)
