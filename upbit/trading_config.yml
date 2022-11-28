@@ -1,4 +1,4 @@
-symbol: "ETH"
+symbol: "DOGE"
 k: 0.7
 max_buy_limit_p: 2.5 # 직전 candle 이 너무 커서 buy price 가 너무 높은 것을 방지하기 위한 상한선
 expected_k: 0.6 # 익절 기준 (k기준)
