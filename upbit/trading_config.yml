@@ -5,6 +5,6 @@ expected_k: 0.6 # 익절 기준 (k기준)
 expected_rate_p: 3.0 # 익절 기준 (%기준)
 partial_sell_rate_p: 50 # 익절시 매도비율 %
 emergency_sell_rate_p: 0.3
-candle_interval: "minute240"
+candle_interval: "minute60"
 # candle_interval: "day"
 partial_sell_delay_sec: 30
