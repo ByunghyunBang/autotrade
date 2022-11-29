@@ -164,8 +164,6 @@ def candle_begin_event():
     target_price_to_buy = get_target_price_to_buy(ohlcv_candle2)
     target_price_to_sell = get_target_price_to_sell(ohlcv_candle2)
 
-    print(ohlcv_candle2)
-
     start_log()
     log_and_notify(
         "candle begin: market={};current_price={};candle_open={};latest_krw={};{}"
