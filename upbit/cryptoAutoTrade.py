@@ -261,9 +261,9 @@ while True:
                 if (latest_krw is None):
                     latest_krw = total_krw
                 total_krw_diff = total_krw - latest_krw
-                if (total_krw_diff>=0):
-                    diff_mark = "⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️"
-                elif (total_krw_diff==0):
+                if (total_krw > latest_krw):
+                    diff_mark = "❤️❤️❤️❤️❤️❤️❤️❤️"
+                elif (total_krw == latest_krw):
                     diff_mark = ""
                 else:
                     diff_mark = "💀💀💀💀💀💀💀💀💀"
