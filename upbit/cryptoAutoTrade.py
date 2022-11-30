@@ -220,7 +220,7 @@ while True:
                     krw = get_balance("KRW")
                     if krw > 5000:
                         log_and_notify(
-                            "buy: current_price={};target_price={};krw={}"
+                            "buy: 🦁🦁🦁🦁🦁🦁🦁🦁;current_price={};target_price={};krw={}"
                             .format(
                                 human_readable(current_price),
                                 human_readable(target_price),
@@ -239,7 +239,7 @@ while True:
                     total_krw = get_total_balance_krw_and_crypto_with_locked(market, current_price)
                     if crypto > 0.00008:
                         log_and_notify(
-                            "sell: current_price={};crypto={};crypto_balance={};total_krw={}"
+                            "sell: 🐥🐥🐥🐥🐥🐥🐥🐥;current_price={};crypto={};crypto_balance={};total_krw={}"
                             .format(
                                 human_readable(current_price),
                                 crypto,
@@ -262,7 +262,7 @@ while True:
                     latest_krw = total_krw
                 total_krw_diff = total_krw - latest_krw
                 log_and_notify(
-                    "candle end: balance={};earned={}({}%);************************************"
+                    "candle end: balance={};earned={}({}%);⚾️⚾️⚾️⚾️⚾️⚾️⚾️⚾️⚾️⚾️⚾️⚾️⚾️⚾️⚾️********"
                     .format(
                         human_readable(total_krw),
                         human_readable(total_krw_diff),
