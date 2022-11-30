@@ -86,7 +86,7 @@ def set_freeze(now):
     frozen_time=now
 
 def human_readable(num):
-    return format(int(num), ',')
+    return "{:,.2f}".format(num)
 
 def start_log():
     log_str="config: market={};k={};candle_interval={}".format(
