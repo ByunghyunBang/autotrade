@@ -261,12 +261,20 @@ while True:
                 if (latest_krw is None):
                     latest_krw = total_krw
                 total_krw_diff = total_krw - latest_krw
+                if (total_krw_diff>=0):
+                    diff_mark = "⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️"
+                if (total_krw_diff==0):
+                    diff_mark = ""
+                else:
+                    diff_mark = "💀💀💀💀💀💀💀💀💀"
+                
                 log_and_notify(
-                    "candle end: balance={};earned={}({}%);⚾️⚾️⚾️⚾️⚾️⚾️⚾️⚾️⚾️⚾️⚾️⚾️⚾️⚾️⚾️********"
+                    "candle end: balance={};earned={}({}%);{};******************************"
                     .format(
                         human_readable(total_krw),
                         human_readable(total_krw_diff),
-                        round(total_krw_diff/latest_krw*100,2)
+                        round(total_krw_diff/latest_krw*100,2),
+                        diff_mark
                     )
                 )
                 latest_krw = total_krw
