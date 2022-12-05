@@ -16,13 +16,15 @@ def get_middle(value1, value2, rate=0.5):
 def get_target_price_to_buy(ohlcv_candle2):
     prev = ohlcv_candle2.iloc[0]
     height = prev['high'] - prev['low']
-    target_price = prev['close'] + height * k
+    height_k = max(height * k, min_diff_price_to_buy)
+    target_price = prev['close'] + height_k
     return target_price
 
 def get_target_price_to_sell(ohlcv_candle2):
     prev = ohlcv_candle2.iloc[0]
     height = prev['high'] - prev['low']
-    target_price = prev['close'] - height * k
+    height_k = height * k
+    target_price = prev['close'] - height_k
     return target_price
 
 def get_candle_open(ohlcv_candle2):
@@ -118,13 +120,14 @@ def load_config():
     global symbol,k
     global candle_interval,partial_sell_delay
     global market,time_delta,latest_krw
+    global min_diff_price_to_buy
 
     with open(config_file, "r") as f:
         config = yaml.load(f, Loader=yaml.FullLoader)
     symbol = config['symbol']
     k = config['k']
     candle_interval = config['candle_interval']
-    partial_sell_delay = datetime.timedelta(seconds=config['partial_sell_delay_sec'])
+    min_diff_price_to_buy = config['min_diff_price_to_buy']
     if candle_interval=="minute240":
         time_delta=datetime.timedelta(minutes=240)
     elif candle_interval=="minute60":
@@ -202,9 +205,10 @@ while True:
                 is_closed=False
 
             log(
-                "(no-event) diff from current: current_price={};{}"
+                "(no-event) diff from current: current_price={};volumn={};{}"
                 .format(
                     human_readable(current_price),
+                    human_readable(ohlcv_candle2.iloc[1]['volume']),
                     get_target_price_str()
                 )
             )

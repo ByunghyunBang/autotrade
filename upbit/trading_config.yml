@@ -1,10 +1,16 @@
-symbol: "DOGE"
-k: 0.7
-max_buy_limit_p: 2.5 # 직전 candle 이 너무 커서 buy price 가 너무 높은 것을 방지하기 위한 상한선
-expected_k: 0.6 # 익절 기준 (k기준)
-expected_rate_p: 3.0 # 익절 기준 (%기준)
-partial_sell_rate_p: 50 # 익절시 매도비율 %
-emergency_sell_rate_p: 0.3
-candle_interval: "minute60"
+# symbol: "DOGE"
+# k: 0.7
+# max_buy_limit_p: 2.5 # 직전 candle 이 너무 커서 buy price 가 너무 높은 것을 방지하기 위한 상한선
+# expected_k: 0.6 # 익절 기준 (k기준)
+# expected_rate_p: 3.0 # 익절 기준 (%기준)
+# partial_sell_rate_p: 50 # 익절시 매도비율 %
+# emergency_sell_rate_p: 0.3
+# candle_interval: "minute60"
 # candle_interval: "day"
-partial_sell_delay_sec: 30
+# partial_sell_delay_sec: 30
+
+#####
+symbol: "DOGE"
+candle_interval: "minute60"
+k: 0.7
+min_diff_price_to_buy: 2
