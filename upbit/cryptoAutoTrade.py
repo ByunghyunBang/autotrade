@@ -178,10 +178,11 @@ def candle_begin_event():
 
     start_log()
     log_and_notify(
-        "candle begin: market={};current_price={};candle_open={};latest_krw={};{}"
+        "candle begin: market={};current_price={};min_volumn_to_buy={};candle_open={};latest_krw={};{}"
         .format(
             market,
             human_readable(current_price),
+            human_readable(min_volumn_to_buy),
             human_readable(candle_open),
             human_readable(status['latest_krw']),
             get_target_price_str()
