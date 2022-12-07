@@ -1,6 +1,7 @@
 import pyupbit
 import numpy as np
 import pandas as pd
+import math
 
 ###################################
 # 순환 매수매도 알고리즘 구현
@@ -8,18 +9,23 @@ import pandas as pd
 
 pd.set_option('display.max_rows', 1000)
 
-market = "KRW-ETH"
-k = 0.5
-candle_interval="minute240"
-
+ticker = "DOGE"
+market = "KRW-" + ticker
+k = 0.7
+candle_interval="minute60"
 # test_period = "20221020" # 횡보장
 # test_period = "20221030" # 상승장
 # test_period = "20220921" # 하락장
 # test_period = "20221115" # 하락장
 test_period = None
 
-test_days=90
-fee_rate=0.002
+test_days=21
+fee_rate=0.0005
+
+min_diff_price_to_buy=1 # DOGE
+min_volumn_to_buy= 80 * 1000 * 1000 # DOGE
+# min_diff_price_to_buy=5000 # ETH
+# min_volumn_to_buy= 2000 # ETH
 if candle_interval=="day":
     test_term=test_days
 if candle_interval=="minute240":
@@ -47,6 +53,7 @@ print("--------------------------")
 
 time_to_buy = False
 time_to_sell = False
+latest_buy_price = 0
 
 def human_readable(num):
     return format(int(num), ',')
@@ -54,11 +61,12 @@ def human_readable(num):
 def get_compate_rate(num1, num2):
     return round((num2 - num1) / num1 * 100, 2)
 
-def get_status_string(current_price, krw_balance, crypto_balance):
+def get_status_string(current_price, volume, krw_balance, crypto_balance):
     current_total_balance = krw_balance + crypto_balance * current_price
 
-    return "current_price={};krw={},crypto={},total={},krw-balance-rate={}".format(
+    return "current_price={};volume={};krw={};crypto={};total={};krw-balance-rate={}".format(
                     human_readable(current_price),
+                    human_readable(volume),
                     human_readable(krw_balance),
                     crypto_balance,
                     human_readable(current_total_balance),
@@ -72,7 +80,9 @@ def buy_condition(latest2_row):
 
 def get_target_price_to_buy(latest2_row):
     prev = latest2_row.iloc[0]
-    target_price = prev['close'] + prev['height'] * k
+    current = latest2_row.iloc[1]
+    height_k = max(prev['height'] * k,min_diff_price_to_buy)
+    target_price = current['low'] + height_k
     return target_price
 
 def sell_condition(latest2_row):
@@ -82,19 +92,22 @@ def sell_condition(latest2_row):
 
 def get_target_price_to_sell(latest2_row):
     prev = latest2_row.iloc[0]
-    target_price = prev['close'] - prev['height'] * k
+    current = latest2_row.iloc[1]
+    # height_k = max(prev['height'] * k,2)
+    height_k = prev['height'] * k
+    target_price = max(current['high'] - height_k,latest_buy_price)
     return target_price
 
 def simulation(df, krw_balance, crypto_balance_in_krw, amount, min_diff):
+    global latest_buy_price
     open_row = df.iloc[0]
     open_price = open_row['open']
     crypto_balance = crypto_balance_in_krw / open_price
-    last_tx_price = open_price
-    last_tx_type = None
     open_total_balance = krw_balance + crypto_balance * open_price
+    latest_krw_balance = open_total_balance
     print("{} start:{}"
         .format(
-            open_row.name, get_status_string(open_row['open'], krw_balance, crypto_balance)
+            open_row.name, get_status_string(open_row['open'], open_row['volume'], krw_balance, crypto_balance)
         )
     )
     for i in range(len(df)):
@@ -104,8 +117,9 @@ def simulation(df, krw_balance, crypto_balance_in_krw, amount, min_diff):
         latest2_row = df.iloc[i-1:i+1]
         timestamp = current_row.name
         current_price = current_row['open']
+        volume = current_row['volume']
         crypto_balance_in_krw = crypto_balance * current_price
-        time_to_buy = krw_balance > crypto_balance_in_krw
+        time_to_buy = krw_balance > crypto_balance_in_krw and volume >= min_volumn_to_buy and current_row['close'] > current_row['open']
         time_to_sell = krw_balance < crypto_balance_in_krw
         # print("{}: log: current_price={},krw_balance={};crypto_balance_in_krw={};time_to_buy={},time_to_sell={}".format(
         #     timestamp,
@@ -121,24 +135,30 @@ def simulation(df, krw_balance, crypto_balance_in_krw, amount, min_diff):
 
         if time_to_buy and buy_condition(latest2_row):
 
-            target_price = get_target_price_to_buy(latest2_row)
+            if ticker=="ETH":
+                target_price = math.ceil(get_target_price_to_buy(latest2_row)/1000)*1000 # ETH
+            else:
+                target_price = math.ceil(get_target_price_to_buy(latest2_row)) # DOGE
             amount = krw_balance
             krw_balance -= amount
             crypto_balance += (amount / target_price) * (1 - fee_rate)
-            total_krw = krw_balance + crypto_balance * current_price
+            total_krw = krw_balance + crypto_balance * target_price
             print("{} buy: {}".format(
-                timestamp, get_status_string(target_price, krw_balance, crypto_balance)
+                timestamp, get_status_string(target_price, volume, krw_balance, crypto_balance)
                 )
             )
-            latest_krw_balance = total_krw
+            latest_buy_price = current_price
 
         if time_to_sell and sell_condition(latest2_row):
 
-            target_price = get_target_price_to_sell(latest2_row)
+            if ticker=="ETH":
+                target_price = math.trunc(get_target_price_to_sell(latest2_row)/1000)*1000 # ETH
+            else:
+                target_price = math.trunc(get_target_price_to_sell(latest2_row)) # DOGE
             amount = crypto_balance
-            krw_balance += amount * current_price * (1 - fee_rate)
+            krw_balance += amount * target_price * (1 - fee_rate)
             crypto_balance -= amount
-            total_krw = krw_balance + crypto_balance * current_price
+            total_krw = krw_balance + crypto_balance * target_price
 
             result_comment = "earned={}({}%)".format(
                     human_readable(total_krw-latest_krw_balance),
@@ -147,7 +167,7 @@ def simulation(df, krw_balance, crypto_balance_in_krw, amount, min_diff):
 
             print("{} sell: {};{}".format(
                 timestamp,
-                get_status_string(target_price, krw_balance, crypto_balance),
+                get_status_string(target_price, volume, krw_balance, crypto_balance),
                 result_comment
                 )
             )
@@ -156,8 +176,9 @@ def simulation(df, krw_balance, crypto_balance_in_krw, amount, min_diff):
     close_row = df.iloc[-1]
     timestamp = close_row.name
 
+    print("---------------------------------------------------")
     print("{} finish: {}".format(
-        close_row.name, get_status_string(close_row['close'], krw_balance, crypto_balance)
+        close_row.name, get_status_string(close_row['close'], close_row['volume'], krw_balance, crypto_balance)
         )
     )
 
