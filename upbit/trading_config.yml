@@ -14,4 +14,4 @@ symbol: "DOGE"
 candle_interval: "minute60"
 k: 0.7
 min_diff_price_to_buy: 1.5
-min_volumn_to_buy: 60000000
+min_volumn_to_buy: 80000000
