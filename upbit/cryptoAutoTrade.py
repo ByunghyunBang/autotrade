@@ -128,7 +128,7 @@ def load_config():
     global candle_interval,partial_sell_delay
     global market,time_delta,latest_krw
     global min_diff_price_to_buy
-    global min_volumn_to_buy
+    global min_volume_to_buy
     global min_loss_p
 
     with open(config_file, "r") as f:
@@ -137,7 +137,7 @@ def load_config():
     k = config['k']
     candle_interval = config['candle_interval']
     min_diff_price_to_buy = config['min_diff_price_to_buy']
-    min_volumn_to_buy = config['min_volumn_to_buy']
+    min_volume_to_buy = config['min_volume_to_buy']
     min_loss_p = config['min_loss_p']
     if candle_interval=="minute240":
         time_delta=datetime.timedelta(minutes=240)
@@ -181,11 +181,11 @@ def candle_begin_event():
 
     start_log()
     log_and_notify(
-        "candle begin: market={};current_price={};min_volumn_to_buy={};candle_open={};latest_krw={};{}"
+        "candle begin: market={};current_price={};min_volume_to_buy={};candle_open={};latest_krw={};{}"
         .format(
             market,
             human_readable(current_price),
-            human_readable(min_volumn_to_buy),
+            human_readable(min_volume_to_buy),
             human_readable(candle_open),
             human_readable(status['latest_krw']),
             get_target_price_str()
@@ -233,7 +233,7 @@ while True:
                 continue
 
             # 매수여부 판단
-            if time_to_buy and volume >= min_volumn_to_buy:
+            if time_to_buy and volume >= min_volume_to_buy:
                 target_price = get_target_price_to_buy(ohlcv_candle2)
                 if current_price >= target_price :
                     krw = get_balance("KRW")
