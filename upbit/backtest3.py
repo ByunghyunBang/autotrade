@@ -19,8 +19,10 @@ candle_interval="minute60"
 # test_period = "20221115" # 하락장
 test_period = None
 
-test_days=21
+test_days=30
 fee_rate=0.0005
+
+min_loss_p = 0.5
 
 min_diff_price_to_buy=1 # DOGE
 min_volumn_to_buy= 80 * 1000 * 1000 # DOGE
@@ -95,7 +97,8 @@ def get_target_price_to_sell(latest2_row):
     current = latest2_row.iloc[1]
     # height_k = max(prev['height'] * k,2)
     height_k = prev['height'] * k
-    target_price = max(current['high'] - height_k,latest_buy_price)
+    # target_price = max(prev['high'] - height_k,latest_buy_price)
+    target_price = max(current['high'] - height_k,latest_buy_price * (1-min_loss_p/100))
     return target_price
 
 def simulation(df, krw_balance, crypto_balance_in_krw, amount, min_diff):

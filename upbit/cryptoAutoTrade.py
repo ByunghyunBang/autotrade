@@ -29,8 +29,9 @@ def get_target_price_to_sell(ohlcv_candle2):
     height_k = height * k
     # target_price = prev['close'] - height_k
     target_price = current['high'] - height_k
-    if target_price < latest_buy_price:
-        return latest_buy_price
+    min_loss_price = latest_buy_price * (1-min_loss_p/100)
+    if target_price < min_loss_price:
+        return min_loss_price
     return target_price
 
 def get_candle_open(ohlcv_candle2):
@@ -128,6 +129,7 @@ def load_config():
     global market,time_delta,latest_krw
     global min_diff_price_to_buy
     global min_volumn_to_buy
+    global min_loss_p
 
     with open(config_file, "r") as f:
         config = yaml.load(f, Loader=yaml.FullLoader)
@@ -136,6 +138,7 @@ def load_config():
     candle_interval = config['candle_interval']
     min_diff_price_to_buy = config['min_diff_price_to_buy']
     min_volumn_to_buy = config['min_volumn_to_buy']
+    min_loss_p = config['min_loss_p']
     if candle_interval=="minute240":
         time_delta=datetime.timedelta(minutes=240)
     elif candle_interval=="minute60":
