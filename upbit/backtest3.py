@@ -100,9 +100,9 @@ def get_target_price_to_sell(latest2_row):
     current = latest2_row.iloc[1]
     # height_k = max(prev['height'] * k,2)
     height_k = prev['height'] * k
-    # target_price = max(prev['high'] - height_k,latest_buy_price)
     min_loss_price = latest_buy_price * (1-min_loss_p/100)
-    target_price = max(get_middle(prev['close'],current['high']) - height_k, min_loss_price)
+    target_price = max(prev['high'] - height_k, min_loss_price)
+    # target_price = max(get_middle(prev['close'],current['high']) - height_k, min_loss_price)
     return target_price
 
 def simulation(df, krw_balance, crypto_balance_in_krw, amount, min_diff):
