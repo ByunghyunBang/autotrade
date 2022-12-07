@@ -15,16 +15,22 @@ def get_middle(value1, value2, rate=0.5):
 
 def get_target_price_to_buy(ohlcv_candle2):
     prev = ohlcv_candle2.iloc[0]
+    current = ohlcv_candle2.iloc[1]
     height = prev['high'] - prev['low']
     height_k = max(height * k, min_diff_price_to_buy)
-    target_price = prev['close'] + height_k
+    # target_price = prev['close'] + height_k
+    target_price = current['low'] + height_k
     return target_price
 
 def get_target_price_to_sell(ohlcv_candle2):
     prev = ohlcv_candle2.iloc[0]
+    current = ohlcv_candle2.iloc[1]
     height = prev['high'] - prev['low']
     height_k = height * k
-    target_price = prev['close'] - height_k
+    # target_price = prev['close'] - height_k
+    target_price = current['high'] - height_k
+    if target_price < latest_buy_price:
+        return latest_buy_price
     return target_price
 
 def get_candle_open(ohlcv_candle2):
@@ -121,6 +127,7 @@ def load_config():
     global candle_interval,partial_sell_delay
     global market,time_delta,latest_krw
     global min_diff_price_to_buy
+    global min_volumn_to_buy
 
     with open(config_file, "r") as f:
         config = yaml.load(f, Loader=yaml.FullLoader)
@@ -128,6 +135,7 @@ def load_config():
     k = config['k']
     candle_interval = config['candle_interval']
     min_diff_price_to_buy = config['min_diff_price_to_buy']
+    min_volumn_to_buy = config['min_volumn_to_buy']
     if candle_interval=="minute240":
         time_delta=datetime.timedelta(minutes=240)
     elif candle_interval=="minute60":
@@ -151,6 +159,7 @@ upbit = pyupbit.Upbit(access, secret)
 clear_flags()
 status = load_status()
 is_closed = True
+latest_buy_price = 0
 
 def candle_begin_event():
     load_config()
@@ -198,6 +207,7 @@ while True:
 
             ohlcv_candle2 = pyupbit.get_ohlcv(market, interval=candle_interval, count=2)
             current_price = get_current_price(market)
+            volume = ohlcv_candle2.iloc[1]['volume']
 
             if is_closed:
                 clear_flags()
@@ -205,10 +215,11 @@ while True:
                 is_closed=False
 
             log(
-                "(no-event) diff from current: current_price={};volumn={};{}"
+                "(no-event) diff from current: current_price={};volumn={};latest_buy_price={};{}"
                 .format(
                     human_readable(current_price),
                     human_readable(ohlcv_candle2.iloc[1]['volume']),
+                    human_readable(latest_buy_price),
                     get_target_price_str()
                 )
             )
@@ -218,7 +229,7 @@ while True:
                 continue
 
             # 매수여부 판단
-            if time_to_buy :
+            if time_to_buy and volume >= min_volumn_to_buy:
                 target_price = get_target_price_to_buy(ohlcv_candle2)
                 if current_price >= target_price :
                     krw = get_balance("KRW")
@@ -233,6 +244,7 @@ while True:
                         )
                         if debug_settings.trading_enabled:
                             upbit.buy_market_order(market, krw*0.9995)
+                        latest_buy_price = current_price
                         time_to_buy = False
 
             # 매도여부 판단
