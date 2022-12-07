@@ -28,7 +28,7 @@ def get_target_price_to_sell(ohlcv_candle2):
     height = prev['high'] - prev['low']
     height_k = height * k
     # target_price = prev['close'] - height_k
-    target_price = current['high'] - height_k
+    target_price = get_middle(prev['close'],current['high']) - height_k
     min_loss_price = latest_buy_price * (1-min_loss_p/100)
     if target_price < min_loss_price:
         return min_loss_price

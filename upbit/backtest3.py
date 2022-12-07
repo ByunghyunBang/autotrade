@@ -60,6 +60,9 @@ latest_buy_price = 0
 def human_readable(num):
     return format(int(num), ',')
 
+def get_middle(value1, value2, rate=0.5):
+    return value1 + (value2 - value1) * rate
+
 def get_compate_rate(num1, num2):
     return round((num2 - num1) / num1 * 100, 2)
 
@@ -98,7 +101,8 @@ def get_target_price_to_sell(latest2_row):
     # height_k = max(prev['height'] * k,2)
     height_k = prev['height'] * k
     # target_price = max(prev['high'] - height_k,latest_buy_price)
-    target_price = max(current['high'] - height_k,latest_buy_price * (1-min_loss_p/100))
+    min_loss_price = latest_buy_price * (1-min_loss_p/100)
+    target_price = max(get_middle(prev['close'],current['high']) - height_k, min_loss_price)
     return target_price
 
 def simulation(df, krw_balance, crypto_balance_in_krw, amount, min_diff):
