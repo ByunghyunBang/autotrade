@@ -9,7 +9,9 @@ import math
 
 pd.set_option('display.max_rows', 1000)
 
-ticker = "DOGE"
+ticker = "ETH"
+unit_price = 1000 # ETH
+# unit_price = 1 # DOGE
 market = "KRW-" + ticker
 k = 0.7
 candle_interval="minute60"
@@ -19,15 +21,15 @@ candle_interval="minute60"
 # test_period = "20221115" # 하락장
 test_period = None
 
-test_days=30
+test_days=7
 fee_rate=0.0005
 
-min_loss_p = 0.5
+min_loss_p = 0.3
 
-min_diff_price_to_buy=1 # DOGE
-min_volumn_to_buy= 80 * 1000 * 1000 # DOGE
-# min_diff_price_to_buy=5000 # ETH
-# min_volumn_to_buy= 2000 # ETH
+# min_diff_price_to_buy=1 # DOGE
+# min_volumn_to_buy= 80 * 1000 * 1000 # DOGE
+min_diff_price_to_buy=5000 # ETH
+min_volumn_to_buy= 1500 # ETH
 if candle_interval=="day":
     test_term=test_days
 if candle_interval=="minute240":
@@ -142,10 +144,7 @@ def simulation(df, krw_balance, crypto_balance_in_krw, amount, min_diff):
 
         if time_to_buy and buy_condition(latest2_row):
 
-            if ticker=="ETH":
-                target_price = math.ceil(get_target_price_to_buy(latest2_row)/1000)*1000 # ETH
-            else:
-                target_price = math.ceil(get_target_price_to_buy(latest2_row)) # DOGE
+            target_price = math.ceil(get_target_price_to_buy(latest2_row)/unit_price)*unit_price
             amount = krw_balance
             krw_balance -= amount
             crypto_balance += (amount / target_price) * (1 - fee_rate)
@@ -158,10 +157,7 @@ def simulation(df, krw_balance, crypto_balance_in_krw, amount, min_diff):
 
         if time_to_sell and sell_condition(latest2_row):
 
-            if ticker=="ETH":
-                target_price = math.trunc(get_target_price_to_sell(latest2_row)/1000)*1000 # ETH
-            else:
-                target_price = math.trunc(get_target_price_to_sell(latest2_row)) # DOGE
+            target_price = math.trunc(get_target_price_to_sell(latest2_row)/unit_price)*unit_price
             amount = crypto_balance
             krw_balance += amount * target_price * (1 - fee_rate)
             crypto_balance -= amount
