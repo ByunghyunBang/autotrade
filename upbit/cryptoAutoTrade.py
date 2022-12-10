@@ -230,9 +230,6 @@ while True:
             if is_frozen:
                 continue
 
-            target_price = get_target_price_to_buy(ohlcv_candle2)
-            print(target_price)
-
             # 매수여부 판단
             if time_to_buy and volume >= min_volume_to_buy:
                 target_price = get_target_price_to_buy(ohlcv_candle2)
