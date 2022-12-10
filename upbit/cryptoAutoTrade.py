@@ -141,6 +141,8 @@ def load_config():
         time_delta=datetime.timedelta(minutes=240)
     elif candle_interval=="minute60":
         time_delta=datetime.timedelta(minutes=60)
+    elif candle_interval=="minute30":
+        time_delta=datetime.timedelta(minutes=30)
     elif candle_interval=="minute5":
         time_delta=datetime.timedelta(minutes=5)
     elif candle_interval=="minute1":
