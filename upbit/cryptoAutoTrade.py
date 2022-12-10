@@ -18,8 +18,8 @@ def get_target_price_to_buy(ohlcv_candle2):
     current = ohlcv_candle2.iloc[1]
     height = prev['high'] - prev['low']
     height_k = max(height * k, min_diff_price_to_buy)
-    # target_price = prev['close'] + height_k
-    target_price = current['low'] + height_k
+    target_price = prev['close'] + height_k
+    # target_price = current['low'] + height_k
     return target_price
 
 def get_target_price_to_sell(ohlcv_candle2):
@@ -229,6 +229,9 @@ while True:
             # Freeze 상태이면 거래하지 않음
             if is_frozen:
                 continue
+
+            target_price = get_target_price_to_buy(ohlcv_candle2)
+            print(target_price)
 
             # 매수여부 판단
             if time_to_buy and volume >= min_volume_to_buy:

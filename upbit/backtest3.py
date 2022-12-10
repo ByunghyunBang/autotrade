@@ -89,7 +89,7 @@ def get_target_price_to_buy(latest2_row):
     prev = latest2_row.iloc[0]
     current = latest2_row.iloc[1]
     height_k = max(prev['height'] * k,min_diff_price_to_buy)
-    target_price = current['low'] + height_k
+    target_price = prev['close'] + height_k
     return target_price
 
 def sell_condition(latest2_row):
