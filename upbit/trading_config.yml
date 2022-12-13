@@ -18,8 +18,8 @@
 # min_loss_p: 0.3
 
 symbol: "ETH"
-candle_interval: "minute60"
+candle_interval: "minute30"
 k: 0.7
 min_diff_price_to_buy: 5000
-min_volume_to_buy: 1500
+min_volume_to_buy: 900
 min_loss_p: 0.3
