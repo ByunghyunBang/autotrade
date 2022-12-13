@@ -30,7 +30,7 @@ def get_target_price_to_sell(ohlcv_candle2):
     # target_price = prev['close'] - height_k
     target_price = prev['high'] - height_k
     min_loss_price = latest_buy_price * (1-min_loss_p/100)
-    return max(target_price, min_loss_price)
+    return get_middle(target_price, min_loss_price)
 
 def get_candle_open(ohlcv_candle2):
     df = ohlcv_candle2

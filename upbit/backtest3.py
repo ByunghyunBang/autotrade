@@ -27,7 +27,7 @@ fee_rate=0.0005
 min_loss_p = 0.3
 
 # min_diff_price_to_buy=1 # DOGE
-# min_volumn_to_buy= 80 * 1000 * 1000 # DOGE
+# min_volumn_to_buy= 60 * 1000 * 1000 # DOGE
 min_diff_price_to_buy=5000 # ETH
 min_volumn_to_buy= 1500 # ETH
 if candle_interval=="day":
@@ -103,7 +103,7 @@ def get_target_price_to_sell(latest2_row):
     # height_k = max(prev['height'] * k,2)
     height_k = prev['height'] * k
     min_loss_price = latest_buy_price * (1-min_loss_p/100)
-    target_price = max(prev['high'] - height_k, min_loss_price)
+    target_price = get_middle(prev['high'] - height_k, min_loss_price)
     # target_price = max(get_middle(prev['close'],current['high']) - height_k, min_loss_price)
     return target_price
 
