@@ -10,8 +10,6 @@ import math
 pd.set_option('display.max_rows', 1000)
 
 ticker = "ETH"
-unit_price = 1000 # ETH
-# unit_price = 1 # DOGE
 market = "KRW-" + ticker
 k = 0.7
 candle_interval="minute30"
@@ -21,15 +19,20 @@ candle_interval="minute30"
 # test_period = "20221115" # 하락장
 test_period = None
 
-test_days=30
+test_days=14
 fee_rate=0.0005
 
 min_loss_p = 0.3
 sell_on_end = True
-# min_diff_price_to_buy=1 # DOGE
-# min_volumn_to_buy= 60 * 1000 * 1000 # DOGE
-min_diff_price_to_buy=5000 # ETH
-min_volumn_to_buy= 900 # ETH
+if ticker == "DOGE":
+    unit_price = 1 # DOGE
+    min_diff_price_to_buy=1
+    min_volumn_to_buy= 60 * 1000 * 1000
+else:
+    unit_price = 1000 # ETH
+    min_diff_price_to_buy=5000 # ETH
+    min_volumn_to_buy= 1200 # ETH
+
 if candle_interval=="day":
     test_term=test_days
 if candle_interval=="minute240":
