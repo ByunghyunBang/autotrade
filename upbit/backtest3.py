@@ -14,22 +14,22 @@ unit_price = 1000 # ETH
 # unit_price = 1 # DOGE
 market = "KRW-" + ticker
 k = 0.7
-candle_interval="minute60"
+candle_interval="minute30"
 # test_period = "20221020" # 횡보장
 # test_period = "20221030" # 상승장
 # test_period = "20220921" # 하락장
 # test_period = "20221115" # 하락장
 test_period = None
 
-test_days=7
+test_days=30
 fee_rate=0.0005
 
 min_loss_p = 0.3
-
+sell_on_end = True
 # min_diff_price_to_buy=1 # DOGE
 # min_volumn_to_buy= 60 * 1000 * 1000 # DOGE
 min_diff_price_to_buy=5000 # ETH
-min_volumn_to_buy= 1500 # ETH
+min_volumn_to_buy= 900 # ETH
 if candle_interval=="day":
     test_term=test_days
 if candle_interval=="minute240":
@@ -103,9 +103,27 @@ def get_target_price_to_sell(latest2_row):
     # height_k = max(prev['height'] * k,2)
     height_k = prev['height'] * k
     min_loss_price = latest_buy_price * (1-min_loss_p/100)
-    target_price = get_middle(prev['high'] - height_k, min_loss_price)
+    target_price = max(prev['high'] - height_k, min_loss_price)
     # target_price = max(get_middle(prev['close'],current['high']) - height_k, min_loss_price)
     return target_price
+
+def sell_routine(timestamp, krw_balance, crypto_balance, volume, amount, target_price, latest_krw_balance):
+    krw_balance += amount * target_price * (1 - fee_rate)
+    crypto_balance -= amount
+    total_krw = krw_balance + crypto_balance * target_price
+
+    result_comment = "earned={}({}%)".format(
+            human_readable(total_krw-latest_krw_balance),
+            get_compate_rate(latest_krw_balance, total_krw)
+        )
+
+    print("{} sell: {};{}".format(
+        timestamp,
+        get_status_string(target_price, volume, krw_balance, crypto_balance),
+        result_comment
+        )
+    )
+    return krw_balance, crypto_balance, total_krw
 
 def simulation(df, krw_balance, crypto_balance_in_krw, amount, min_diff):
     global latest_buy_price
@@ -154,26 +172,18 @@ def simulation(df, krw_balance, crypto_balance_in_krw, amount, min_diff):
                 )
             )
             latest_buy_price = current_price
+            if sell_on_end:
+                target_price = math.trunc(current_row['close']/unit_price)*unit_price
+                amount = crypto_balance
+                krw_balance, crypto_balance, total_krw = sell_routine(timestamp, krw_balance, crypto_balance, volume, amount, target_price, latest_krw_balance)
+                latest_krw_balance = total_krw
 
         if time_to_sell and sell_condition(latest2_row):
 
             target_price = math.trunc(get_target_price_to_sell(latest2_row)/unit_price)*unit_price
             amount = crypto_balance
-            krw_balance += amount * target_price * (1 - fee_rate)
-            crypto_balance -= amount
-            total_krw = krw_balance + crypto_balance * target_price
 
-            result_comment = "earned={}({}%)".format(
-                    human_readable(total_krw-latest_krw_balance),
-                    get_compate_rate(latest_krw_balance, total_krw)
-                )
-
-            print("{} sell: {};{}".format(
-                timestamp,
-                get_status_string(target_price, volume, krw_balance, crypto_balance),
-                result_comment
-                )
-            )
+            krw_balance, crypto_balance, total_krw = sell_routine(timestamp, krw_balance, crypto_balance, volume, amount, target_price, latest_krw_balance)
             latest_krw_balance = total_krw
 
     close_row = df.iloc[-1]
@@ -196,4 +206,4 @@ def simulation(df, krw_balance, crypto_balance_in_krw, amount, min_diff):
         )
     )
 
-simulation(df, krw_balance = 5000 * 10000, crypto_balance_in_krw = 0 * 10000, amount= 4000 * 10000, min_diff = 5000)
+simulation(df, krw_balance = 4000 * 10000, crypto_balance_in_krw = 0 * 10000, amount= 4000 * 10000, min_diff = 5000)

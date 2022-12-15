@@ -128,6 +128,7 @@ def load_config():
     global min_diff_price_to_buy
     global min_volume_to_buy
     global min_loss_p
+    global sell_on_end
 
     with open(config_file, "r") as f:
         config = yaml.load(f, Loader=yaml.FullLoader)
@@ -137,6 +138,7 @@ def load_config():
     min_diff_price_to_buy = config['min_diff_price_to_buy']
     min_volume_to_buy = config['min_volume_to_buy']
     min_loss_p = config['min_loss_p']
+    sell_on_end = config['sell_on_end']
     if candle_interval=="minute240":
         time_delta=datetime.timedelta(minutes=240)
     elif candle_interval=="minute60":
@@ -200,6 +202,24 @@ def get_target_price_str():
     else:
         return "target_price=N/A"
 
+def sell_procedure(symbol, current_price):
+    global time_to_sell
+    crypto = get_balance(symbol)
+    total_krw = get_total_balance_krw_and_crypto_with_locked(market, current_price)
+    if crypto > 0.00008:
+        log_and_notify(
+            "sell: 🐥🐥🐥🐥🐥🐥🐥🐥;current_price={};crypto={};crypto_balance={};total_krw={}"
+            .format(
+                human_readable(current_price),
+                crypto,
+                human_readable(current_price*crypto),
+                human_readable(total_krw)
+            )
+        )
+        if debug_settings.trading_enabled:
+            upbit.sell_market_order(market, crypto)
+        time_to_sell=False
+
 while True:
     try:
         now = datetime.datetime.now()
@@ -255,26 +275,16 @@ while True:
             if time_to_sell:
                 target_price = get_target_price_to_sell(ohlcv_candle2)
                 if current_price <= target_price :
-                    crypto = get_balance(symbol)
-                    total_krw = get_total_balance_krw_and_crypto_with_locked(market, current_price)
-                    if crypto > 0.00008:
-                        log_and_notify(
-                            "sell: 🐥🐥🐥🐥🐥🐥🐥🐥;current_price={};crypto={};crypto_balance={};total_krw={}"
-                            .format(
-                                human_readable(current_price),
-                                crypto,
-                                human_readable(current_price*crypto),
-                                human_readable(total_krw)
-                            )
-                        )
-                        if debug_settings.trading_enabled:
-                            upbit.sell_market_order(market, crypto)
-
-                        time_to_sell=False
+                    sell_procedure(symbol, current_price)
 
         # 종료 시점
         else:
             if not is_closed:
+                # 종료시 매도조건이면
+                if sell_on_end:
+                    sell_procedure(symbol, current_price)
+                    time.sleep(5)
+
                 # 현재 잔액 로그
                 total_krw = get_total_balance_krw_and_crypto_with_locked(market,current_price)
                 latest_krw = status['latest_krw']
