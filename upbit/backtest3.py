@@ -13,14 +13,14 @@ ticker = "ETH"
 market = "KRW-" + ticker
 k = 0.7
 candle_interval="minute30"
+test_period = None
 # test_period = "20221020" # 횡보장
 # test_period = "20221030" # 상승장
 # test_period = "20220921" # 하락장
 # test_period = "20221115" # 하락장
-test_period = None
 
-test_days=14
-fee_rate=0.0005
+test_days=60
+fee_rate=0.0012
 
 min_loss_p = 0.3
 sell_on_end = True
@@ -30,7 +30,7 @@ if ticker == "DOGE":
     min_volumn_to_buy= 60 * 1000 * 1000
 else:
     unit_price = 1000 # ETH
-    min_diff_price_to_buy=5000 # ETH
+    min_diff_price_to_buy=3000 # ETH
     min_volumn_to_buy= 1200 # ETH
 
 if candle_interval=="day":
