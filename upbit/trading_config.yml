@@ -23,5 +23,5 @@ k: 0.4
 min_diff_price_to_buy: 3000
 min_volume_to_buy: 900
 min_loss_p: 0.3
-sell_on_end: True
+sell_on_end: False
 time_deadline_to_buy_p: 0.7
