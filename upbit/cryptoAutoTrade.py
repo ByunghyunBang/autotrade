@@ -127,6 +127,7 @@ def load_config():
     global market,time_delta,latest_krw
     global min_diff_price_to_buy
     global min_volume_to_buy
+    global time_deadline_to_buy_p
     global min_loss_p
     global sell_on_end
 
@@ -137,6 +138,7 @@ def load_config():
     candle_interval = config['candle_interval']
     min_diff_price_to_buy = config['min_diff_price_to_buy']
     min_volume_to_buy = config['min_volume_to_buy']
+    time_deadline_to_buy_p = config['time_deadline_to_buy_p']
     min_loss_p = config['min_loss_p']
     sell_on_end = config['sell_on_end']
     if candle_interval=="minute240":
@@ -225,6 +227,7 @@ while True:
         now = datetime.datetime.now()
         start_time = get_start_time(market)
         end_time = start_time + time_delta - datetime.timedelta(seconds=10)
+        time_deadline_to_buy = start_time + time_delta * time_deadline_to_buy_p
 
         # 거래 가능 시간: 봉시작 ~ 봉종료 20초전
         if start_time < now < end_time:
@@ -253,7 +256,7 @@ while True:
                 continue
 
             # 매수여부 판단
-            if time_to_buy and volume >= min_volume_to_buy:
+            if time_to_buy and volume >= min_volume_to_buy and (not sell_on_end or now < time_deadline_to_buy):
                 target_price = get_target_price_to_buy(ohlcv_candle2)
                 if current_price >= target_price :
                     krw = get_balance("KRW")
