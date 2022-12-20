@@ -21,7 +21,7 @@ symbol: "ETH"
 candle_interval: "minute30"
 k: 0.4
 min_diff_price_to_buy: 1000
-min_volume_to_buy: 900
+min_volume_to_buy: 3000
 min_loss_p: 0.3
 sell_on_end: True
 time_deadline_to_buy_p: 0.7
