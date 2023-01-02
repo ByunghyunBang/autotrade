@@ -23,6 +23,6 @@ candle_interval: "minute60"
 k: 0.7
 min_diff_price_to_buy: 3000
 min_volume_to_buy: 900
-min_loss_p: 0.3
-sell_on_end: True
+min_loss_p: 1.0
+sell_on_end: False
 time_deadline_to_buy_p: 0.7
