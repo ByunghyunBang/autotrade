@@ -12,26 +12,34 @@ pd.set_option('display.max_rows', 1000)
 ticker = "ETH"
 market = "KRW-" + ticker
 k = 0.7
-candle_interval="minute30"
+candle_interval="minute60"
 test_period = None
 # test_period = "20221020" # 횡보장
 # test_period = "20221030" # 상승장
 # test_period = "20220921" # 하락장
 # test_period = "20221115" # 하락장
 
-test_days=60
+test_days=3
 fee_rate=0.0012
 
-min_loss_p = 0.3
-sell_on_end = True
+min_loss_p = 3.0
+sell_on_end = False
 if ticker == "DOGE":
-    unit_price = 1 # DOGE
-    min_diff_price_to_buy=1
-    min_volumn_to_buy= 60 * 1000 * 1000
-else:
+    unit_price = 0.1 # DOGE
+    min_diff_price_to_buy=0.5
+    min_volumn_to_buy= 50 * 1000 * 1000
+elif ticker == "ETH":
     unit_price = 1000 # ETH
     min_diff_price_to_buy=3000 # ETH
-    min_volumn_to_buy= 1200 # ETH
+    min_volumn_to_buy= 1000 # ETH
+elif ticker == "HIFI":
+    unit_price = 1
+    min_diff_price_to_buy=2
+    min_volumn_to_buy= 4*1000*1000
+else: # XRP
+    unit_price = 1
+    min_diff_price_to_buy=2
+    min_volumn_to_buy= 15*1000*1000
 
 if candle_interval=="day":
     test_term=test_days
@@ -63,7 +71,7 @@ time_to_sell = False
 latest_buy_price = 0
 
 def human_readable(num):
-    return format(int(num), ',')
+    return "{:,.2f}".format(num)
 
 def get_middle(value1, value2, rate=0.5):
     return value1 + (value2 - value1) * rate
