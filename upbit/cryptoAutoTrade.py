@@ -10,37 +10,45 @@ import yaml
 access = os.getenv('UPBIT_ACCESS')
 secret = os.getenv('UPBIT_SECRET')
 
+
 def get_middle(value1, value2, rate=0.5):
     return value1 + (value2 - value1) * rate
 
-def get_target_price_to_buy(ohlcv_candle2):
-    prev = ohlcv_candle2.iloc[0]
-    current = ohlcv_candle2.iloc[1]
+
+def get_target_price_to_buy(ohlcv_candle2_param):
+    prev = ohlcv_candle2_param.iloc[0]
+    # current = ohlcv_candle2.iloc[1]
     height = prev['high'] - prev['low']
     height_k = max(height * k, min_diff_price_to_buy)
-    target_price = prev['close'] + height_k
+    result = prev['close'] + height_k
     # target_price = current['low'] + height_k
-    return target_price
+    return result
 
-def get_target_price_to_sell(ohlcv_candle2):
-    prev = ohlcv_candle2.iloc[0]
-    current = ohlcv_candle2.iloc[1]
+
+def get_target_price_to_sell(ohlcv_candle2_param, sell_price_policy_param):
+    prev = ohlcv_candle2_param.iloc[0]
+    # current = ohlcv_candle2.iloc[1]
     height = prev['high'] - prev['low']
     height_k = height * k
-    # target_price = prev['close'] - height_k
-    target_price = prev['high'] - height_k
-    min_loss_price = latest_buy_price * (1-min_loss_p/100)
-    return max(target_price, min_loss_price)
+    if sell_price_policy_param == "PREV_CLOSE_BASED":
+        result = prev['close'] - height_k
+    else:
+        result = prev['high'] - height_k
+    min_loss_price = latest_buy_price * (1 - min_loss_p / 100)
+    return max(result, min_loss_price)
 
-def get_candle_open(ohlcv_candle2):
-    df = ohlcv_candle2
+
+def get_candle_open(ohlcv_candle2_param):
+    df = ohlcv_candle2_param
     return df.iloc[1]['open']
 
-def get_start_time(market):
+
+def get_start_time(market_param):
     """시작 시간 조회"""
-    df = pyupbit.get_ohlcv(market, interval=candle_interval, count=1)
-    start_time = df.index[0]
-    return start_time
+    df = pyupbit.get_ohlcv(market_param, interval=candle_interval, count=1)
+    result = df.index[0]
+    return result
+
 
 def get_balance(ticker):
     """잔고 조회"""
@@ -53,83 +61,92 @@ def get_balance(ticker):
                 return 0
     return 0
 
-def get_current_price(market):
-    """현재가 조회"""
-    return pyupbit.get_orderbook(ticker=market)["orderbook_units"][0]["ask_price"]
 
-def get_total_balance_krw_and_crypto_with_locked(market, current_price):
-    total_krw = upbit.get_balance_t()
-    total_crypto = upbit.get_balance_t(market)
-    return total_krw + total_crypto * current_price
+def get_current_price(market_param):
+    """현재가 조회"""
+    return pyupbit.get_orderbook(ticker=market_param)["orderbook_units"][0]["ask_price"]
+
+
+def get_total_balance_krw_and_crypto_with_locked(market_param, current_price_param):
+    total_krw_ = upbit.get_balance_t()
+    total_crypto = upbit.get_balance_t(market_param)
+    return total_krw_ + total_crypto * current_price_param
+
 
 def log(msg):
-    now = datetime.datetime.now()
-    print(now, msg)
+    now_ = datetime.datetime.now()
+    print(now_, msg)
+
 
 def log_and_notify(msg):
     log(msg)
     if debug_settings.trading_enabled:
-        now = datetime.datetime.now().replace(microsecond=0)
-        notify_msg = str(now) + "\n" + msg.replace(";","\n").replace(": ",":\n")
+        now_ = datetime.datetime.now().replace(microsecond=0)
+        notify_msg = str(now_) + "\n" + msg.replace(";", "\n").replace(": ", ":\n")
         lineNotify.line_notify(notify_msg)
+
 
 def diff_percent(n):
     return round((n - 1) * 100, 2)
 
+
 def clear_flags():
     global already_buyed, meet_expected_price, time_to_partial_sell, emergency_sell, is_frozen, frozen_time, is_closed, partial_sell_done
-    already_buyed=False
-    meet_expected_price=False
-    time_to_partial_sell=None
-    emergency_sell=False
-    is_frozen=False
-    frozen_time=time.time()
-    is_closed=False
-    partial_sell_done=False
+    already_buyed = False
+    meet_expected_price = False
+    time_to_partial_sell = None
+    emergency_sell = False
+    is_frozen = False
+    frozen_time = time.time()
+    is_closed = False
+    partial_sell_done = False
 
-def set_freeze(now):
-    global is_frozen, frozen_time
-    is_frozen=True
-    frozen_time=now
 
 def human_readable(num):
     return "{:,.2f}".format(num)
 
+
 def start_log():
-    log_str="config: market={};k={};candle_interval={}".format(
-                market,
-                k,
-                candle_interval
-                )
+    log_str = "config: market={};k={};candle_interval={}".format(
+        market,
+        k,
+        candle_interval
+    )
 
     if debug_settings.trading_enabled:
         log_and_notify(log_str)
     else:
         log(log_str)
 
-status_file = "trading_status.yml"
+
 def save_status(status):
     with open(status_file, "w") as f:
         yaml.dump(status, f)
+
 
 def load_status():
     try:
         with open(status_file, "r") as f:
             status = yaml.load(f, Loader=yaml.FullLoader)
     except:
-        status = { 'latest_krw': None}
+        status = {'latest_krw': None}
     return status
 
+
+status_file = "trading_status.yml"
 config_file = "trading_config.yml"
+
+
 def load_config():
-    global symbol,k
-    global candle_interval,partial_sell_delay
-    global market,time_delta,latest_krw
+    global symbol, k
+    global candle_interval, partial_sell_delay
+    global market, time_delta, latest_krw
     global min_diff_price_to_buy
     global min_volume_to_buy
     global time_deadline_to_buy_p
     global min_loss_p
     global sell_on_end
+    global sell_price_policy
 
     with open(config_file, "r") as f:
         config = yaml.load(f, Loader=yaml.FullLoader)
@@ -141,20 +158,26 @@ def load_config():
     time_deadline_to_buy_p = config['time_deadline_to_buy_p']
     min_loss_p = config['min_loss_p']
     sell_on_end = config['sell_on_end']
-    if candle_interval=="minute240":
-        time_delta=datetime.timedelta(minutes=240)
-    elif candle_interval=="minute60":
-        time_delta=datetime.timedelta(minutes=60)
-    elif candle_interval=="minute30":
-        time_delta=datetime.timedelta(minutes=30)
-    elif candle_interval=="minute5":
-        time_delta=datetime.timedelta(minutes=5)
-    elif candle_interval=="minute1":
-        time_delta=datetime.timedelta(minutes=1)
-    elif candle_interval=="day":
-        time_delta=datetime.timedelta(days=1)
-    market="KRW-{}".format(symbol)
+    sell_price_policy = config['sell_price_policy']
+    if candle_interval == "minute240":
+        time_delta = datetime.timedelta(minutes=240)
+    elif candle_interval == "minute60":
+        time_delta = datetime.timedelta(minutes=60)
+    elif candle_interval == "minute30":
+        time_delta = datetime.timedelta(minutes=30)
+    elif candle_interval == "minute5":
+        time_delta = datetime.timedelta(minutes=5)
+    elif candle_interval == "minute1":
+        time_delta = datetime.timedelta(minutes=1)
+    elif candle_interval == "day":
+        time_delta = datetime.timedelta(days=1)
+    market = "KRW-{}".format(symbol)
     latest_krw = None
+
+
+# 변수 선언
+market = None
+sell_price_policy = None
 
 # 각종 설정
 load_config()
@@ -168,10 +191,11 @@ status = load_status()
 is_closed = True
 latest_buy_price = 0
 
+
 def candle_begin_event():
     load_config()
-    global current_price,target_price,expected_price,emergency_sell_price,candle_open,status
-    global time_to_buy,time_to_sell,target_price_to_buy,target_price_to_sell
+    global current_price, expected_price, emergency_sell_price, candle_open, status
+    global time_to_buy, time_to_sell, target_price_to_buy, target_price_to_sell
     ohlcv_candle2 = pyupbit.get_ohlcv(market, interval=candle_interval, count=2)
     current_price = get_current_price(market)
     candle_open = get_candle_open(ohlcv_candle2)
@@ -181,7 +205,7 @@ def candle_begin_event():
     time_to_buy = krw_balance > crypto_balance_in_krw
     time_to_sell = krw_balance < crypto_balance_in_krw
     target_price_to_buy = get_target_price_to_buy(ohlcv_candle2)
-    target_price_to_sell = get_target_price_to_sell(ohlcv_candle2)
+    target_price_to_sell = get_target_price_to_sell(ohlcv_candle2, sell_price_policy)
 
     start_log()
     log_and_notify(
@@ -193,8 +217,9 @@ def candle_begin_event():
             human_readable(candle_open),
             human_readable(status['latest_krw']),
             get_target_price_str()
-            )
         )
+    )
+
 
 def get_target_price_str():
     if time_to_buy:
@@ -203,6 +228,7 @@ def get_target_price_str():
         return "target_price_to_sell={}".format(human_readable(target_price_to_sell))
     else:
         return "target_price=N/A"
+
 
 def sell_procedure(symbol, current_price):
     global time_to_sell
@@ -214,13 +240,14 @@ def sell_procedure(symbol, current_price):
             .format(
                 human_readable(current_price),
                 crypto,
-                human_readable(current_price*crypto),
+                human_readable(current_price * crypto),
                 human_readable(total_krw)
             )
         )
         if debug_settings.trading_enabled:
             upbit.sell_market_order(market, crypto)
-        time_to_sell=False
+        time_to_sell = False
+
 
 while True:
     try:
@@ -239,7 +266,7 @@ while True:
             if is_closed:
                 clear_flags()
                 candle_begin_event()
-                is_closed=False
+                is_closed = False
 
             log(
                 "(no-event) diff from current: current_price={};volumn={};latest_buy_price={};{}"
@@ -258,7 +285,7 @@ while True:
             # 매수여부 판단
             if time_to_buy and volume >= min_volume_to_buy and (not sell_on_end or now < time_deadline_to_buy):
                 target_price = get_target_price_to_buy(ohlcv_candle2)
-                if current_price >= target_price :
+                if current_price >= target_price:
                     krw = get_balance("KRW")
                     if krw > 5000:
                         log_and_notify(
@@ -270,14 +297,14 @@ while True:
                             )
                         )
                         if debug_settings.trading_enabled:
-                            upbit.buy_market_order(market, krw*0.9995)
+                            upbit.buy_market_order(market, krw * 0.9995)
                         latest_buy_price = current_price
                         time_to_buy = False
 
             # 매도여부 판단
             if time_to_sell:
-                target_price = get_target_price_to_sell(ohlcv_candle2)
-                if current_price <= target_price :
+                target_price = get_target_price_to_sell(ohlcv_candle2, sell_price_policy)
+                if current_price <= target_price:
                     sell_procedure(symbol, current_price)
 
         # 종료 시점
@@ -289,30 +316,30 @@ while True:
                     time.sleep(5)
 
                 # 현재 잔액 로그
-                total_krw = get_total_balance_krw_and_crypto_with_locked(market,current_price)
+                total_krw = get_total_balance_krw_and_crypto_with_locked(market, current_price)
                 latest_krw = status['latest_krw']
-                if (latest_krw is None):
+                if latest_krw is None:
                     latest_krw = total_krw
                 total_krw_diff = total_krw - latest_krw
-                if (total_krw > latest_krw):
+                if total_krw > latest_krw:
                     diff_mark = "❤️❤️❤️❤️❤️❤️❤️❤️"
-                elif (total_krw == latest_krw):
+                elif total_krw == latest_krw:
                     diff_mark = ""
                 else:
                     diff_mark = "💀💀💀💀💀💀💀💀💀"
-                
+
                 log_and_notify(
                     "candle end: balance={};earned={}({}%);{};******************************"
                     .format(
                         human_readable(total_krw),
                         human_readable(total_krw_diff),
-                        round(total_krw_diff/latest_krw*100,2),
+                        round(total_krw_diff / latest_krw * 100, 2),
                         diff_mark
                     )
                 )
                 latest_krw = total_krw
-                is_closed= True
-                status['latest_krw']=latest_krw
+                is_closed = True
+                status['latest_krw'] = latest_krw
                 save_status(status)
 
         time.sleep(1)
