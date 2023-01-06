@@ -119,18 +119,18 @@ def start_log():
         log(log_str)
 
 
-def save_status(status):
+def save_status(status_param):
     with open(status_file, "w") as f:
-        yaml.dump(status, f)
+        yaml.dump(status_param, f)
 
 
 def load_status():
     try:
         with open(status_file, "r") as f:
-            status = yaml.load(f, Loader=yaml.FullLoader)
+            status_ = yaml.load(f, Loader=yaml.FullLoader)
     except:
-        status = {'latest_krw': None}
-    return status
+        status_ = {'latest_krw': None}
+    return status_
 
 
 status_file = "trading_status.yml"
@@ -230,23 +230,21 @@ def get_target_price_str():
         return "target_price=N/A"
 
 
-def sell_procedure(symbol, current_price):
-    global time_to_sell
-    crypto = get_balance(symbol)
-    total_krw = get_total_balance_krw_and_crypto_with_locked(market, current_price)
+def sell_procedure(symbol_param, current_price_param):
+    crypto = get_balance(symbol_param)
+    total_krw = get_total_balance_krw_and_crypto_with_locked(market, current_price_param)
     if crypto > 0.00008:
         log_and_notify(
             "sell: 🐥🐥🐥🐥🐥🐥🐥🐥;current_price={};crypto={};crypto_balance={};total_krw={}"
             .format(
-                human_readable(current_price),
+                human_readable(current_price_param),
                 crypto,
-                human_readable(current_price * crypto),
+                human_readable(current_price_param * crypto),
                 human_readable(total_krw)
             )
         )
         if debug_settings.trading_enabled:
             upbit.sell_market_order(market, crypto)
-        time_to_sell = False
 
 
 while True:
@@ -306,6 +304,7 @@ while True:
                 target_price = get_target_price_to_sell(ohlcv_candle2, sell_price_policy)
                 if current_price <= target_price:
                     sell_procedure(symbol, current_price)
+                    time_to_sell = False
 
         # 종료 시점
         else:
@@ -313,6 +312,7 @@ while True:
                 # 종료시 매도조건이면
                 if sell_on_end:
                     sell_procedure(symbol, current_price)
+                    time_to_sell = False
                     time.sleep(5)
 
                 # 현재 잔액 로그
