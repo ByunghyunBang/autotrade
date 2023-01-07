@@ -9,22 +9,23 @@
 # candle_interval: "day"
 # partial_sell_delay_sec: 30
 
-# symbol: "DOGE"
-# candle_interval: "minute60"
-# k: 0.7
-# min_diff_price_to_buy: 1
-# min_volume_to_buy: 80000000
-# min_loss_p: 0.3
-# sell_on_end: True
-# time_deadline_to_buy_p: 0.7
-
-symbol: "ETH"
+symbol: "DOGE"
 candle_interval: "minute60"
 k: 0.7
-min_diff_price_to_buy: 3000
-min_volume_to_buy: 900
-min_loss_p: 1.0
-sell_on_end: False
-# sell_price_policy: "PREV_HIGH_BASED"
+min_diff_price_to_buy: 1
+min_volume_to_buy: 80000000
+min_loss_p: 0.3
+sell_on_end: True
 sell_price_policy: "PREV_CLOSE_BASED"
 time_deadline_to_buy_p: 0.7
+
+#symbol: "ETH"
+#candle_interval: "minute60"
+#k: 0.7
+#min_diff_price_to_buy: 3000
+#min_volume_to_buy: 900
+#min_loss_p: 1.0
+#sell_on_end: False
+## sell_price_policy: "PREV_HIGH_BASED"
+#sell_price_policy: "PREV_CLOSE_BASED"
+#time_deadline_to_buy_p: 0.7
