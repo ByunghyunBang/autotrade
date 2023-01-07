@@ -13,7 +13,7 @@ symbol: "DOGE"
 candle_interval: "minute60"
 k: 0.7
 min_diff_price_to_buy: 1
-min_volume_to_buy: 80000000
+min_volume_to_buy: 10000000
 min_loss_p: 0.3
 sell_on_end: True
 sell_price_policy: "PREV_CLOSE_BASED"
