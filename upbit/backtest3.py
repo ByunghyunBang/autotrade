@@ -8,10 +8,12 @@ import math
 ###################################
 
 pd.set_option('display.max_rows', 1000)
+pd.set_option('display.max_columns', 30)
 
-ticker = "ETH"
+ticker = "APT"
 market = "KRW-" + ticker
 k = 1.5
+volume_k = 5
 candle_interval = "minute60"
 test_period = None
 # test_period = "20221020" # 횡보장
@@ -23,7 +25,7 @@ test_days = 3
 fee_rate = 0.0012
 
 min_loss_p = 3.0
-sell_on_end = False
+sell_on_end = True
 if ticker == "DOGE":
     unit_price = 0.1  # DOGE
     min_diff_price_to_buy = 1
@@ -98,8 +100,9 @@ def get_status_string(current_price, volume, krw_balance, crypto_balance):
 def buy_condition(latest2_row):
     target_price = get_target_price_to_buy(latest2_row)
     current = latest2_row.iloc[1]
-    return current['high'] >= target_price
-
+    prev = latest2_row.iloc[0]
+    volume = current['volume']
+    return current['high'] >= target_price and volume > volume_k * prev['volume']
 
 def get_target_price_to_buy(latest2_row):
     prev = latest2_row.iloc[0]
@@ -161,12 +164,13 @@ def simulation(df, krw_balance, crypto_balance_in_krw, amount, min_diff):
         if i < 1:
             continue
         current_row = df.iloc[i]
+        prev = df.iloc[i-1]
         latest2_row = df.iloc[i - 1:i + 1]
         timestamp = current_row.name
         current_price = current_row['open']
         volume = current_row['volume']
         crypto_balance_in_krw = crypto_balance * current_price
-        time_to_buy = krw_balance > crypto_balance_in_krw and volume >= min_volume_to_buy and current_row['close'] > \
+        time_to_buy = krw_balance > crypto_balance_in_krw and current_row['close'] > \
                       current_row['open']
         time_to_sell = krw_balance < crypto_balance_in_krw
         # print("{}: log: current_price={},krw_balance={};crypto_balance_in_krw={};time_to_buy={},time_to_sell={}".format(
