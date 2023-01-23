@@ -6,6 +6,7 @@ import traceback
 import lineNotify
 import debug_settings
 import yaml
+import argparse
 
 access = os.getenv('UPBIT_ACCESS')
 secret = os.getenv('UPBIT_SECRET')
@@ -137,24 +138,49 @@ status_file = "trading_status.yml"
 config_file = "trading_config.yml"
 
 
+def get_config_or_default(config_, key, default=None):
+    try:
+        value = config_[key]
+        return value
+    except Exception:
+        return default
+
+
 def load_config():
     global symbol, k
     global candle_interval, partial_sell_delay
     global market, time_delta, latest_krw
     global min_diff_price_to_buy
+    global volume_k
     global min_volume_to_buy
     global time_deadline_to_buy_p
     global min_loss_p
     global sell_on_end
     global sell_price_policy
 
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('--symbol', required=False, help='symbol')
+    parser.add_argument('--k', required=False, help='k')
+    parser.add_argument('--volume_k', required=False, help='volume_k')
+    args = parser.parse_args()
+
     with open(config_file, "r") as f:
         config = yaml.load(f, Loader=yaml.FullLoader)
-    symbol = config['symbol']
-    k = config['k']
+
+    if args.symbol is not None:
+        symbol = args.symbol
+    else:
+        symbol = get_config_or_default(config, "symbol")
+    if symbol is None:
+        print("symbol is unspecified. Terminated.")
+        exit(1)
+
+    k = get_config_or_default(config, "k", default=99999)
+    volume_k = get_config_or_default(config, "volume_k", 0)
     candle_interval = config['candle_interval']
     min_diff_price_to_buy = config['min_diff_price_to_buy']
-    min_volume_to_buy = config['min_volume_to_buy']
+    min_volume_to_buy = get_config_or_default(config, 'min_volume_to_buy', default=10000000000000000)
     time_deadline_to_buy_p = config['time_deadline_to_buy_p']
     min_loss_p = config['min_loss_p']
     sell_on_end = config['sell_on_end']
@@ -196,6 +222,7 @@ def candle_begin_event():
     load_config()
     global current_price, expected_price, emergency_sell_price, candle_open, status
     global time_to_buy, time_to_sell, target_price_to_buy, target_price_to_sell
+    global min_volume_to_buy
     ohlcv_candle2 = pyupbit.get_ohlcv(market, interval=candle_interval, count=2)
     current_price = get_current_price(market)
     candle_open = get_candle_open(ohlcv_candle2)
@@ -206,14 +233,14 @@ def candle_begin_event():
     time_to_sell = krw_balance < crypto_balance_in_krw
     target_price_to_buy = get_target_price_to_buy(ohlcv_candle2)
     target_price_to_sell = get_target_price_to_sell(ohlcv_candle2, sell_price_policy)
+    min_volume_to_buy = get_volume_to_buy(ohlcv_candle2, volume_k)
 
     start_log()
     log_and_notify(
-        "candle begin: market={};current_price={};min_volume_to_buy={};candle_open={};latest_krw={};{}"
+        "candle begin: market={};current_price={};candle_open={};latest_krw={};{}"
         .format(
             market,
             human_readable(current_price),
-            human_readable(min_volume_to_buy),
             human_readable(candle_open),
             human_readable(status['latest_krw']),
             get_target_price_str()
@@ -247,6 +274,12 @@ def sell_procedure(symbol_param, current_price_param):
             upbit.sell_market_order(market, crypto)
 
 
+def get_volume_to_buy(ohlcv_candle2, volume_k):
+    if volume_k > 0:
+        return ohlcv_candle2.iloc[0]['volume'] * volume_k
+    return min_volume_to_buy
+
+
 while True:
     try:
         now = datetime.datetime.now()
@@ -267,10 +300,11 @@ while True:
                 is_closed = False
 
             log(
-                "(no-event) diff from current: current_price={};volumn={};latest_buy_price={};{}"
+                "(no-event) diff from current: current_price={};volume={};min_volume_to_buy={};latest_buy_price={};{}"
                 .format(
                     human_readable(current_price),
                     human_readable(ohlcv_candle2.iloc[1]['volume']),
+                    human_readable(min_volume_to_buy),
                     human_readable(latest_buy_price),
                     get_target_price_str()
                 )
