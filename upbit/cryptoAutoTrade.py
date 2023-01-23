@@ -321,15 +321,15 @@ while True:
                 target_price = get_target_price_to_buy(ohlcv_candle2)
                 if current_price >= target_price:
                     krw = get_balance("KRW")
-                    if krw > 5000:
-                        log_and_notify(
-                            "buy: 🦁🦁🦁🦁🦁🦁🦁🦁;current_price={};target_price={};krw={}"
-                            .format(
-                                human_readable(current_price),
-                                human_readable(target_price),
-                                human_readable(krw)
-                            )
+                    log_and_notify(
+                        "buy: 🦁🦁🦁🦁🦁🦁🦁🦁;current_price={};target_price={};krw={}"
+                        .format(
+                            human_readable(current_price),
+                            human_readable(target_price),
+                            human_readable(krw)
                         )
+                    )
+                    if krw > 5000:
                         if debug_settings.trading_enabled:
                             upbit.buy_market_order(market, krw * 0.9995)
                         latest_buy_price = current_price
