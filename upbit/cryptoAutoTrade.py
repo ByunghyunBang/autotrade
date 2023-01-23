@@ -108,9 +108,10 @@ def human_readable(num):
 
 
 def start_log():
-    log_str = "config: market={};k={};candle_interval={}".format(
+    log_str = "config: market={};k={};volume_k={};candle_interval={}".format(
         market,
         k,
+        volume_k,
         candle_interval
     )
 
@@ -300,8 +301,9 @@ while True:
                 is_closed = False
 
             log(
-                "(no-event) diff from current: current_price={};volume={};min_volume_to_buy={};latest_buy_price={};{}"
+                "(no-event) diff from current: market={};current_price={};volume={};min_volume_to_buy={};latest_buy_price={};{}"
                 .format(
+                    market,
                     human_readable(current_price),
                     human_readable(ohlcv_candle2.iloc[1]['volume']),
                     human_readable(min_volume_to_buy),
