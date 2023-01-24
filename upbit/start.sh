@@ -1,1 +1,20 @@
-nohup python3 -u cryptoAutoTrade.py >> output.log &
+nohup python3 -u cryptoAutoTrade.py --symbol=APT >> out-APT.log &
+nohup python3 -u cryptoAutoTrade.py --symbol=CELO >> out-CELO.log &
+nohup python3 -u cryptoAutoTrade.py --symbol=AXS >> out-AXS.log &
+nohup python3 -u cryptoAutoTrade.py --symbol=CBK >> out-CBK.log &
+nohup python3 -u cryptoAutoTrade.py --symbol=1INCH >> out-1INCH.log &
+nohup python3 -u cryptoAutoTrade.py --symbol=LOOM >> out-LOOM.log &
+nohup python3 -u cryptoAutoTrade.py --symbol=STRK >> out-STRK.log &
+nohup python3 -u cryptoAutoTrade.py --symbol=REP >> out-REP.log &
+nohup python3 -u cryptoAutoTrade.py --symbol=GAS>> out-GAS.log &
+nohup python3 -u cryptoAutoTrade.py --symbol=HUNT>> out-HUNT.log &
+nohup python3 -u cryptoAutoTrade.py --symbol=STPT>> out-STPT.log &
+nohup python3 -u cryptoAutoTrade.py --symbol=XTZ>> out-XTZ.log &
+nohup python3 -u cryptoAutoTrade.py --symbol=OMG>> out-OMG.log &
+nohup python3 -u cryptoAutoTrade.py --symbol=AHT>> out-AHT.log &
+nohup python3 -u cryptoAutoTrade.py --symbol=UPP>> out-UPP.log &
+nohup python3 -u cryptoAutoTrade.py --symbol=MED>> out-MED.log &
+nohup python3 -u cryptoAutoTrade.py --symbol=ICX>> out-ICX.log &
+nohup python3 -u cryptoAutoTrade.py --symbol=BORA>> out-BORA.log &
+nohup python3 -u cryptoAutoTrade.py --symbol=MLK>> out-MLK.log &
+nohup python3 -u cryptoAutoTrade.py --symbol=ARDR>> out-ARDR.log &
