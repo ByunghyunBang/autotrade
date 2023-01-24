@@ -250,7 +250,6 @@ def candle_begin_event():
 
 
 def get_target_price_str():
-    global time_to_buy, time_to_sell
     if time_to_buy:
         return "target_price_to_buy={}".format(human_readable(target_price_to_buy))
     elif time_to_sell:
@@ -282,105 +281,109 @@ def get_volume_to_buy(ohlcv_candle2, volume_k):
     return min_volume_to_buy
 
 
-while True:
-    try:
-        now = datetime.datetime.now()
-        start_time = get_start_time(market)
-        end_time = start_time + time_delta - datetime.timedelta(seconds=10)
-        time_deadline_to_buy = start_time + time_delta * time_deadline_to_buy_p
+def main():
+    global is_closed, latest_buy_price, time_to_buy, time_to_sell
+    while True:
+        try:
+            now = datetime.datetime.now()
+            start_time = get_start_time(market)
+            end_time = start_time + time_delta - datetime.timedelta(seconds=10)
+            time_deadline_to_buy = start_time + time_delta * time_deadline_to_buy_p
 
-        # 거래 가능 시간: 봉시작 ~ 봉종료 20초전
-        if start_time < now < end_time:
+            # 거래 가능 시간: 봉시작 ~ 봉종료 20초전
+            if start_time < now < end_time:
 
-            ohlcv_candle2 = pyupbit.get_ohlcv(market, interval=candle_interval, count=2)
-            current_price = get_current_price(market)
-            volume = ohlcv_candle2.iloc[1]['volume']
+                ohlcv_candle2 = pyupbit.get_ohlcv(market, interval=candle_interval, count=2)
+                current_price = get_current_price(market)
+                volume = ohlcv_candle2.iloc[1]['volume']
 
-            if is_closed:
-                clear_flags()
-                candle_begin_event()
-                is_closed = False
+                if is_closed:
+                    clear_flags()
+                    candle_begin_event()
+                    is_closed = False
 
-            log(
-                "(no-event) diff from current: market={};current_price={};volume={};min_volume_to_buy={};latest_buy_price={};{}"
-                .format(
-                    market,
-                    human_readable(current_price),
-                    human_readable(ohlcv_candle2.iloc[1]['volume']),
-                    human_readable(min_volume_to_buy),
-                    human_readable(latest_buy_price),
-                    get_target_price_str()
+                log(
+                    "(no-event) diff from current: market={};current_price={};volume={};min_volume_to_buy={};latest_buy_price={};{}"
+                    .format(
+                        market,
+                        human_readable(current_price),
+                        human_readable(ohlcv_candle2.iloc[1]['volume']),
+                        human_readable(min_volume_to_buy),
+                        human_readable(latest_buy_price),
+                        get_target_price_str()
+                    )
                 )
-            )
 
-            # Freeze 상태이면 거래하지 않음
-            if is_frozen:
-                continue
+                # Freeze 상태이면 거래하지 않음
+                if is_frozen:
+                    continue
 
-            # 매수여부 판단
-            if time_to_buy and volume >= min_volume_to_buy and (not sell_on_end or now < time_deadline_to_buy):
-                target_price = get_target_price_to_buy(ohlcv_candle2)
-                if current_price >= target_price:
-                    krw = get_balance("KRW")
+                # 매수여부 판단
+                if time_to_buy and volume >= min_volume_to_buy and (not sell_on_end or now < time_deadline_to_buy):
+                    target_price = get_target_price_to_buy(ohlcv_candle2)
+                    if current_price >= target_price:
+                        krw = get_balance("KRW")
+                        log_and_notify(
+                            "buy: 🦁🦁🦁🦁🦁🦁🦁🦁;current_price={};target_price={};krw={}"
+                            .format(
+                                human_readable(current_price),
+                                human_readable(target_price),
+                                human_readable(krw)
+                            )
+                        )
+                        if krw > 5000:
+                            if debug_settings.trading_enabled:
+                                upbit.buy_market_order(market, krw * 0.9995)
+                            latest_buy_price = current_price
+                            time_to_buy = False
+
+                # 매도여부 판단
+                if time_to_sell:
+                    target_price = get_target_price_to_sell(ohlcv_candle2, sell_price_policy)
+                    if current_price <= target_price:
+                        sell_procedure(symbol, current_price)
+                        time_to_sell = False
+
+            # 종료 시점
+            else:
+                if not is_closed:
+                    # 종료시 매도조건이면
+                    if sell_on_end:
+                        sell_procedure(symbol, current_price)
+                        time_to_sell = False
+                        time.sleep(5)
+
+                    # 현재 잔액 로그
+                    total_krw = get_total_balance_krw_and_crypto_with_locked(market, current_price)
+                    latest_krw = status['latest_krw']
+                    if latest_krw is None:
+                        latest_krw = total_krw
+                    total_krw_diff = total_krw - latest_krw
+                    if total_krw > latest_krw:
+                        diff_mark = "❤️❤️❤️❤️❤️❤️❤️❤️"
+                    elif total_krw == latest_krw:
+                        diff_mark = ""
+                    else:
+                        diff_mark = "💀💀💀💀💀💀💀💀💀"
+
                     log_and_notify(
-                        "buy: 🦁🦁🦁🦁🦁🦁🦁🦁;current_price={};target_price={};krw={}"
+                        "candle end: balance={};earned={}({}%);{};******************************"
                         .format(
-                            human_readable(current_price),
-                            human_readable(target_price),
-                            human_readable(krw)
+                            human_readable(total_krw),
+                            human_readable(total_krw_diff),
+                            round(total_krw_diff / latest_krw * 100, 2),
+                            diff_mark
                         )
                     )
-                    if krw > 5000:
-                        if debug_settings.trading_enabled:
-                            upbit.buy_market_order(market, krw * 0.9995)
-                        latest_buy_price = current_price
-                        time_to_buy = False
-
-            # 매도여부 판단
-            if time_to_sell:
-                target_price = get_target_price_to_sell(ohlcv_candle2, sell_price_policy)
-                if current_price <= target_price:
-                    sell_procedure(symbol, current_price)
-                    time_to_sell = False
-
-        # 종료 시점
-        else:
-            if not is_closed:
-                # 종료시 매도조건이면
-                if sell_on_end:
-                    sell_procedure(symbol, current_price)
-                    time_to_sell = False
-                    time.sleep(5)
-
-                # 현재 잔액 로그
-                total_krw = get_total_balance_krw_and_crypto_with_locked(market, current_price)
-                latest_krw = status['latest_krw']
-                if latest_krw is None:
                     latest_krw = total_krw
-                total_krw_diff = total_krw - latest_krw
-                if total_krw > latest_krw:
-                    diff_mark = "❤️❤️❤️❤️❤️❤️❤️❤️"
-                elif total_krw == latest_krw:
-                    diff_mark = ""
-                else:
-                    diff_mark = "💀💀💀💀💀💀💀💀💀"
+                    is_closed = True
+                    status['latest_krw'] = latest_krw
+                    save_status(status)
 
-                log_and_notify(
-                    "candle end: balance={};earned={}({}%);{};******************************"
-                    .format(
-                        human_readable(total_krw),
-                        human_readable(total_krw_diff),
-                        round(total_krw_diff / latest_krw * 100, 2),
-                        diff_mark
-                    )
-                )
-                latest_krw = total_krw
-                is_closed = True
-                status['latest_krw'] = latest_krw
-                save_status(status)
+            time.sleep(1)
+        except Exception as e:
+            log(e)
+            traceback.print_exc()
+            time.sleep(5)
 
-        time.sleep(1)
-    except Exception as e:
-        log(e)
-        traceback.print_exc()
-        time.sleep(5)
+main()
