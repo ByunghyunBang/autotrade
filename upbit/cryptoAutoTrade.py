@@ -250,6 +250,7 @@ def candle_begin_event():
 
 
 def get_target_price_str():
+    global time_to_buy, time_to_sell
     if time_to_buy:
         return "target_price_to_buy={}".format(human_readable(target_price_to_buy))
     elif time_to_sell:
