@@ -332,11 +332,11 @@ def main():
                                 human_readable(krw)
                             )
                         )
+                        time_to_buy = False
                         if krw > 5000:
                             if debug_settings.trading_enabled:
                                 upbit.buy_market_order(market, krw * 0.9995)
                             latest_buy_price = current_price
-                        time_to_buy = False
 
                 # 매도여부 판단
                 if time_to_sell:
