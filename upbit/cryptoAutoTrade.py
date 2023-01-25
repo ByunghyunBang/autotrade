@@ -324,8 +324,9 @@ def main():
                     if current_price >= target_price:
                         krw = get_balance("KRW")
                         log_and_notify(
-                            "buy: 🦁🦁🦁🦁🦁🦁🦁🦁;current_price={};target_price={};krw={}"
+                            "buy: 🦁🦁🦁🦁🦁🦁🦁🦁;market={};current_price={};target_price={};krw={}"
                             .format(
+                                market,
                                 human_readable(current_price),
                                 human_readable(target_price),
                                 human_readable(krw)
@@ -367,8 +368,9 @@ def main():
                         diff_mark = "💀💀💀💀💀💀💀💀💀"
 
                     log_and_notify(
-                        "candle end: balance={};earned={}({}%);{};******************************"
+                        "candle end: market={};balance={};earned={}({}%);{};******************************"
                         .format(
+                            market,
                             human_readable(total_krw),
                             human_readable(total_krw_diff),
                             round(total_krw_diff / latest_krw * 100, 2),
