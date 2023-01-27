@@ -297,7 +297,7 @@ def get_volume_to_buy(ohlcv_candle2, volume_k):
 
 def main():
     global is_closed, latest_buy_price, time_to_buy, time_to_sell
-    global already_bought, bought_price
+    global already_bought, bought_price, meet_expected_price
     while True:
         try:
             now = datetime.datetime.now()
