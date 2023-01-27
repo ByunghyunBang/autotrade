@@ -7,7 +7,7 @@ nohup python3 -u cryptoAutoTrade.py --symbol=AXS >> out-AXS.log &
 nohup python3 -u cryptoAutoTrade.py --symbol=BORA >> out-BORA.log &
 sleep 1
 nohup python3 -u cryptoAutoTrade.py --symbol=CBK --min_volume_to_buy=5000000 >> out-CBK.log &
-nohup python3 -u cryptoAutoTrade.py --symbol=CELO >> out-CELO.log &
+nohup python3 -u cryptoAutoTrade.py --symbol=CELO --min_volume_to_buy=2000000 >> out-CELO.log &
 nohup python3 -u cryptoAutoTrade.py --symbol=GAS --min_volume_to_buy=1000000 >> out-GAS.log &
 sleep 1
 nohup python3 -u cryptoAutoTrade.py --symbol=GMT >> out-GMT.log &
