@@ -39,6 +39,11 @@ def get_target_price_to_sell(ohlcv_candle2_param, sell_price_policy_param):
     return max(result, min_loss_price)
 
 
+def get_expected_price(ohlcv_candle2):
+    df = ohlcv_candle2
+    return df.iloc[0]['close'] + (df.iloc[0]['high'] - df.iloc[0]['low']) * expected_rate_p / 100
+
+
 def get_candle_open(ohlcv_candle2_param):
     df = ohlcv_candle2_param
     return df.iloc[1]['open']
@@ -92,8 +97,10 @@ def diff_percent(n):
 
 
 def clear_flags():
-    global already_buyed, meet_expected_price, time_to_partial_sell, emergency_sell, is_frozen, frozen_time, is_closed, partial_sell_done
-    already_buyed = False
+    global already_bought, meet_expected_price, time_to_partial_sell, emergency_sell, is_frozen, frozen_time, is_closed, partial_sell_done
+    global bought_price
+    already_bought = False
+    bought_price = 0
     meet_expected_price = False
     time_to_partial_sell = None
     emergency_sell = False
@@ -158,6 +165,7 @@ def load_config():
     global min_loss_p
     global sell_on_end
     global sell_price_policy
+    global expected_rate_p
 
     parser = argparse.ArgumentParser()
 
@@ -184,6 +192,8 @@ def load_config():
         min_volume_to_buy = args.min_volume_to_buy
     else:
         min_volume_to_buy = get_config_or_default(config, "min_volume_to_buy", default=10000000000000000)
+
+    expected_rate_p = get_config_or_default(config, "expected_rate_p", default=1000)
     candle_interval = config['candle_interval']
     min_diff_price_to_buy = config['min_diff_price_to_buy']
     time_deadline_to_buy_p = config['time_deadline_to_buy_p']
@@ -265,16 +275,16 @@ def get_target_price_str():
 def sell_procedure(symbol_param, current_price_param):
     crypto = get_balance(symbol_param)
     total_krw = get_total_balance_krw_and_crypto_with_locked(market, current_price_param)
-    if crypto > 0.00008:
-        log_and_notify(
-            "sell: 🐥🐥🐥🐥🐥🐥🐥🐥;current_price={};crypto={};crypto_balance={};total_krw={}"
-            .format(
-                human_readable(current_price_param),
-                crypto,
-                human_readable(current_price_param * crypto),
-                human_readable(total_krw)
-            )
+    log_and_notify(
+        "sell: 🐥🐥🐥🐥🐥🐥🐥🐥;current_price={};crypto={};crypto_balance={};total_krw={}"
+        .format(
+            human_readable(current_price_param),
+            crypto,
+            human_readable(current_price_param * crypto),
+            human_readable(total_krw)
         )
+    )
+    if crypto > 0.00008:
         if debug_settings.trading_enabled:
             upbit.sell_market_order(market, crypto)
 
@@ -287,6 +297,7 @@ def get_volume_to_buy(ohlcv_candle2, volume_k):
 
 def main():
     global is_closed, latest_buy_price, time_to_buy, time_to_sell
+    global already_bought, bought_price
     while True:
         try:
             now = datetime.datetime.now()
@@ -337,10 +348,25 @@ def main():
                             )
                         )
                         time_to_buy = False
+                        already_bought = True
+                        bought_price = current_price
                         if krw > 5000:
                             if debug_settings.trading_enabled:
                                 upbit.buy_market_order(market, krw * 0.9995)
                             latest_buy_price = current_price
+
+                if already_bought and not meet_expected_price:
+                    expected_price = get_expected_price(ohlcv_candle2)
+                    if current_price > expected_price:
+                        meet_expected_price = True
+                        top_price = current_price
+
+                if meet_expected_price:
+                    if current_price > top_price: # 기대값에 도달했어도 가격이 오르는 중에는 팔지 않음
+                        top_price = current_price
+                    elif current_price < top_price * (1 - 0.005): # 최고점 대비 0.5% 하락시점에 매도
+                        sell_procedure(symbol, current_price)
+                        time_to_sell = False
 
                 # 매도여부 판단
                 if time_to_sell:
