@@ -189,9 +189,9 @@ def load_config():
     k = get_config_or_default(config, "k", default=99999)
     volume_k = get_config_or_default(config, "volume_k", 0)
     if args.min_volume_to_buy is not None:
-        min_volume_to_buy = args.min_volume_to_buy
+        min_volume_to_buy = int(args.min_volume_to_buy)
     else:
-        min_volume_to_buy = get_config_or_default(config, "min_volume_to_buy", default=10000000000000000)
+        min_volume_to_buy = int(get_config_or_default(config, "min_volume_to_buy", default=10000000000000000))
 
     expected_rate_p = get_config_or_default(config, "expected_rate_p", default=1000)
     candle_interval = config['candle_interval']
