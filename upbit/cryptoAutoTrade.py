@@ -164,6 +164,7 @@ def load_config():
     parser.add_argument('--symbol', required=False, help='symbol')
     parser.add_argument('--k', required=False, help='k')
     parser.add_argument('--volume_k', required=False, help='volume_k')
+    parser.add_argument('--min_volume_to_buy', required=False, help='min_volume_to_buy')
     args = parser.parse_args()
 
     with open(config_file, "r") as f:
@@ -179,9 +180,12 @@ def load_config():
 
     k = get_config_or_default(config, "k", default=99999)
     volume_k = get_config_or_default(config, "volume_k", 0)
+    if args.min_volume_to_buy is not None:
+        min_volume_to_buy = args.min_volume_to_buy
+    else:
+        min_volume_to_buy = get_config_or_default(config, "min_volume_to_buy", default=10000000000000000)
     candle_interval = config['candle_interval']
     min_diff_price_to_buy = config['min_diff_price_to_buy']
-    min_volume_to_buy = get_config_or_default(config, 'min_volume_to_buy', default=10000000000000000)
     time_deadline_to_buy_p = config['time_deadline_to_buy_p']
     min_loss_p = config['min_loss_p']
     sell_on_end = config['sell_on_end']
