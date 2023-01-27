@@ -248,7 +248,7 @@ def candle_begin_event():
     time_to_sell = krw_balance < crypto_balance_in_krw
     target_price_to_buy = get_target_price_to_buy(ohlcv_candle2)
     target_price_to_sell = get_target_price_to_sell(ohlcv_candle2, sell_price_policy)
-    min_volume_to_buy = get_volume_to_buy(ohlcv_candle2, volume_k)
+    min_volume_to_buy = get_volume_to_buy(ohlcv_candle2, min_volume_to_buy, volume_k)
 
     start_log()
     log_and_notify(
@@ -272,8 +272,8 @@ def get_target_price_str():
         return "target_price=N/A"
 
 
-def sell_procedure(symbol_param, current_price_param):
-    crypto = get_balance(symbol_param)
+def sell_procedure(symbol_param, current_price_param, sell_rate=1):
+    crypto = get_balance(symbol_param) * sell_rate
     total_krw = get_total_balance_krw_and_crypto_with_locked(market, current_price_param)
     log_and_notify(
         "sell: 🐥🐥🐥🐥🐥🐥🐥🐥;current_price={};crypto={};crypto_balance={};total_krw={}"
@@ -289,9 +289,9 @@ def sell_procedure(symbol_param, current_price_param):
             upbit.sell_market_order(market, crypto)
 
 
-def get_volume_to_buy(ohlcv_candle2, volume_k):
+def get_volume_to_buy(ohlcv_candle2, min_volume_to_buy, volume_k):
     if volume_k > 0:
-        return ohlcv_candle2.iloc[0]['volume'] * volume_k
+        return max(min_volume_to_buy, ohlcv_candle2.iloc[0]['volume'] * volume_k)
     return min_volume_to_buy
 
 
