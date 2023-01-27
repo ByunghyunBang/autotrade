@@ -39,11 +39,6 @@ def get_target_price_to_sell(ohlcv_candle2_param, sell_price_policy_param):
     return max(result, min_loss_price)
 
 
-def get_expected_price(ohlcv_candle2):
-    df = ohlcv_candle2
-    return df.iloc[0]['close'] + (df.iloc[0]['high'] - df.iloc[0]['low']) * expected_rate_p / 100
-
-
 def get_candle_open(ohlcv_candle2_param):
     df = ohlcv_candle2_param
     return df.iloc[1]['open']
@@ -193,7 +188,7 @@ def load_config():
     else:
         min_volume_to_buy = int(get_config_or_default(config, "min_volume_to_buy", default=10000000000000000))
 
-    expected_rate_p = get_config_or_default(config, "expected_rate_p", default=1000)
+    expected_rate_p = float(get_config_or_default(config, "expected_rate_p", default=1000))
     candle_interval = config['candle_interval']
     min_diff_price_to_buy = config['min_diff_price_to_buy']
     time_deadline_to_buy_p = config['time_deadline_to_buy_p']
@@ -235,7 +230,7 @@ latest_buy_price = 0
 
 def candle_begin_event():
     load_config()
-    global current_price, expected_price, emergency_sell_price, candle_open, status
+    global current_price, emergency_sell_price, candle_open, status
     global time_to_buy, time_to_sell, target_price_to_buy, target_price_to_sell
     global min_volume_to_buy
     ohlcv_candle2 = pyupbit.get_ohlcv(market, interval=candle_interval, count=2)
@@ -350,13 +345,13 @@ def main():
                         time_to_buy = False
                         already_bought = True
                         bought_price = current_price
+                        expected_price = bought_price * (1 + expected_rate_p / 100)
                         if krw > 5000:
                             if debug_settings.trading_enabled:
                                 upbit.buy_market_order(market, krw * 0.9995)
                             latest_buy_price = current_price
 
                 if already_bought and not meet_expected_price:
-                    expected_price = get_expected_price(ohlcv_candle2)
                     if current_price > expected_price:
                         meet_expected_price = True
                         top_price = current_price
