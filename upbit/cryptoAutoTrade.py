@@ -360,9 +360,24 @@ def main():
                     if current_price > expected_price:
                         meet_expected_price = True
                         top_price = current_price
+                        log(
+                            "meet_expected_price: market={};current_price={}"
+                            .format(
+                                market,
+                                human_readable(current_price)
+                            )
+                        )
 
                 if meet_expected_price:
                     if current_price > top_price: # 기대값에 도달했어도 가격이 오르는 중에는 팔지 않음
+                        log(
+                            "top_price updated: market={};top_price_old={};new_top_price={}"
+                            .format(
+                                market,
+                                human_readable(top_price),
+                                human_readable(current_price)
+                            )
+                        )
                         top_price = current_price
                     elif current_price < top_price * (1 - 0.005): # 최고점 대비 0.5% 하락시점에 매도
                         sell_procedure(symbol, current_price)
