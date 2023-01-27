@@ -28,3 +28,4 @@ nohup python3 -u cryptoAutoTrade.py --symbol=UPP >> out-UPP.log &
 sleep 1
 nohup python3 -u cryptoAutoTrade.py --symbol=WAXP >> out-WAXP.log &
 nohup python3 -u cryptoAutoTrade.py --symbol=XTZ >> out-XTZ.log &
+sleep 1
