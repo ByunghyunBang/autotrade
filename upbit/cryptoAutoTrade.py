@@ -233,7 +233,7 @@ latest_buy_price = 0
 
 
 class BuyStatus(Enum):
-    CANNOT_BUY = 1
+    DO_NOT_BUY = 1
     READY_TO_BUY = 2
     MEET_EXPECTED_PRICE = 3
 
@@ -282,7 +282,7 @@ def sell_procedure(mark="sell", symbol_param="", current_price_param=0, sell_rat
     crypto = get_balance(symbol_param) * sell_rate
     total_krw = get_total_balance_krw_and_crypto_with_locked(market, current_price_param)
     log_and_notify(
-        "{}}: 🐥🐥🐥🐥🐥🐥🐥🐥;market={};current_price={};crypto={};crypto_balance={};total_krw={}"
+        "{}: 🐥🐥🐥🐥🐥🐥🐥🐥;market={};current_price={};crypto={};crypto_balance={};total_krw={}"
         .format(
             mark,
             market,
