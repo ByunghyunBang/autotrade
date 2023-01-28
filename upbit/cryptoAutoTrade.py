@@ -7,6 +7,8 @@ import lineNotify
 import debug_settings
 import yaml
 import argparse
+from enum import Enum
+
 
 access = os.getenv('UPBIT_ACCESS')
 secret = os.getenv('UPBIT_SECRET')
@@ -92,10 +94,10 @@ def diff_percent(n):
 
 
 def clear_flags():
-    global already_bought, meet_expected_price, time_to_partial_sell, emergency_sell, is_frozen, frozen_time, is_closed, partial_sell_done
-    global bought_price
+    global already_bought, meet_expected_price, time_to_partial_sell, emergency_sell, latest_buy_price
+    global is_frozen, frozen_time, is_closed, partial_sell_done
+    latest_buy_price = 0
     already_bought = False
-    bought_price = 0
     meet_expected_price = False
     time_to_partial_sell = None
     emergency_sell = False
@@ -106,6 +108,8 @@ def clear_flags():
 
 
 def human_readable(num):
+    if num is None:
+        return ""
     return "{:,.2f}".format(num)
 
 
@@ -228,6 +232,13 @@ is_closed = True
 latest_buy_price = 0
 
 
+class BuyStatus(Enum):
+    CANNOT_BUY = 1
+    READY_TO_BUY = 2
+    MEET_EXPECTED_PRICE = 3
+
+
+
 def candle_begin_event():
     load_config()
     global current_price, emergency_sell_price, candle_open, status
@@ -294,7 +305,7 @@ def get_volume_to_buy(ohlcv_candle2, min_volume_to_buy, volume_k):
 
 def main():
     global is_closed, latest_buy_price, time_to_buy, time_to_sell
-    global already_bought, bought_price, meet_expected_price
+    global already_bought, meet_expected_price
     while True:
         try:
             now = datetime.datetime.now()
@@ -346,12 +357,11 @@ def main():
                         )
                         time_to_buy = False
                         already_bought = True
-                        bought_price = current_price
-                        expected_price = bought_price * (1 + expected_rate_p / 100)
+                        latest_buy_price = current_price
+                        expected_price = latest_buy_price * (1 + expected_rate_p / 100)
                         if krw > 5000:
                             if debug_settings.trading_enabled:
                                 upbit.buy_market_order(market, krw * 0.9995)
-                            latest_buy_price = current_price
 
                 if already_bought and not meet_expected_price:
                     if current_price > expected_price:
