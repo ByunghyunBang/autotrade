@@ -94,10 +94,10 @@ def diff_percent(n):
 
 
 def clear_flags():
-    global already_bought, meet_expected_price, time_to_partial_sell, emergency_sell, latest_buy_price
+    global trading_status, meet_expected_price, time_to_partial_sell, emergency_sell, latest_buy_price
     global is_frozen, frozen_time, is_closed, partial_sell_done
+    trading_status = TradingStatus.DO_NOT_BUY
     latest_buy_price = 0
-    already_bought = False
     meet_expected_price = False
     time_to_partial_sell = None
     emergency_sell = False
@@ -225,24 +225,28 @@ load_config()
 # 로그인
 upbit = pyupbit.Upbit(access, secret)
 
+
+class TradingStatus(Enum):
+    DO_NOT_BUY = 1
+    READY_TO_BUY = 2
+    BOUGHT = 3
+    MEET_EXPECTED_PRICE = 4
+    DONE = 5
+
+
 # 자동매매 시작
 clear_flags()
 status = load_status()
 is_closed = True
 latest_buy_price = 0
-
-
-class BuyStatus(Enum):
-    DO_NOT_BUY = 1
-    READY_TO_BUY = 2
-    MEET_EXPECTED_PRICE = 3
-
+trading_status = TradingStatus.DO_NOT_BUY
 
 
 def candle_begin_event():
     load_config()
     global current_price, emergency_sell_price, candle_open, status
     global time_to_buy, time_to_sell, target_price_to_buy, target_price_to_sell
+    global trading_status
     global min_volume_to_buy
     ohlcv_candle2 = pyupbit.get_ohlcv(market, interval=candle_interval, count=2)
     current_price = get_current_price(market)
@@ -251,6 +255,10 @@ def candle_begin_event():
     crypto_balance = get_balance(symbol)
     crypto_balance_in_krw = crypto_balance * current_price
     time_to_buy = krw_balance > crypto_balance_in_krw
+    if time_to_buy:
+        trading_status = TradingStatus.READY_TO_BUY
+    else:
+        trading_status = TradingStatus.DO_NOT_BUY
     time_to_sell = krw_balance < crypto_balance_in_krw
     target_price_to_buy = get_target_price_to_buy(ohlcv_candle2)
     target_price_to_sell = get_target_price_to_sell(ohlcv_candle2, sell_price_policy)
@@ -305,7 +313,8 @@ def get_volume_to_buy(ohlcv_candle2, min_volume_to_buy, volume_k):
 
 def main():
     global is_closed, latest_buy_price, time_to_buy, time_to_sell
-    global already_bought, meet_expected_price
+    global trading_status
+    global meet_expected_price
     while True:
         try:
             now = datetime.datetime.now()
@@ -342,7 +351,7 @@ def main():
                     continue
 
                 # 매수여부 판단
-                if time_to_buy and volume >= min_volume_to_buy and (not sell_on_end or now < time_deadline_to_buy):
+                if trading_status == TradingStatus.READY_TO_BUY and volume >= min_volume_to_buy and (not sell_on_end or now < time_deadline_to_buy):
                     target_price = get_target_price_to_buy(ohlcv_candle2)
                     if current_price >= target_price:
                         krw = get_balance("KRW")
@@ -356,16 +365,16 @@ def main():
                             )
                         )
                         time_to_buy = False
-                        already_bought = True
+                        trading_status = TradingStatus.BOUGHT
                         latest_buy_price = current_price
                         expected_price = latest_buy_price * (1 + expected_rate_p / 100)
                         if krw > 5000:
                             if debug_settings.trading_enabled:
                                 upbit.buy_market_order(market, krw * 0.9995)
 
-                if already_bought and not meet_expected_price:
-                    if current_price > expected_price:
-                        meet_expected_price = True
+                if trading_status == TradingStatus.BOUGHT:
+                    if current_price >= expected_price:
+                        trading_status = TradingStatus.MEET_EXPECTED_PRICE
                         top_price = current_price
                         log(
                             "meet_expected_price: market={};current_price={}"
@@ -375,7 +384,7 @@ def main():
                             )
                         )
 
-                if meet_expected_price:
+                if trading_status == TradingStatus.MEET_EXPECTED_PRICE:
                     if current_price > top_price: # 기대값에 도달했어도 가격이 오르는 중에는 팔지 않음
                         log(
                             "top_price updated: market={};top_price_old={};new_top_price={}"
@@ -387,6 +396,7 @@ def main():
                         )
                         top_price = current_price
                     elif current_price < top_price * (1 - 0.005): # 최고점 대비 0.5% 하락시점에 매도
+                        trading_status = TradingStatus.DONE
                         sell_procedure(mark="sell_on_expected", symbol_param=symbol, current_price_param=current_price)
                         time_to_sell = False
 
@@ -394,6 +404,7 @@ def main():
                 if time_to_sell:
                     target_price = get_target_price_to_sell(ohlcv_candle2, sell_price_policy)
                     if current_price <= target_price:
+                        trading_status = TradingStatus.DONE
                         sell_procedure(mark="sell_on_fall", symbol_param=symbol, current_price_param=current_price)
                         time_to_sell = False
 
