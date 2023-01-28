@@ -267,12 +267,13 @@ def get_target_price_str():
         return "target_price=N/A"
 
 
-def sell_procedure(symbol_param, current_price_param, sell_rate=1):
+def sell_procedure(mark="sell", symbol_param="", current_price_param=0, sell_rate=1):
     crypto = get_balance(symbol_param) * sell_rate
     total_krw = get_total_balance_krw_and_crypto_with_locked(market, current_price_param)
     log_and_notify(
-        "sell: 🐥🐥🐥🐥🐥🐥🐥🐥;market={};current_price={};crypto={};crypto_balance={};total_krw={}"
+        "{}}: 🐥🐥🐥🐥🐥🐥🐥🐥;market={};current_price={};crypto={};crypto_balance={};total_krw={}"
         .format(
+            mark,
             market,
             human_readable(current_price_param),
             crypto,
@@ -376,14 +377,14 @@ def main():
                         )
                         top_price = current_price
                     elif current_price < top_price * (1 - 0.005): # 최고점 대비 0.5% 하락시점에 매도
-                        sell_procedure(symbol, current_price)
+                        sell_procedure(mark="sell_on_expected", symbol_param=symbol, current_price_param=current_price)
                         time_to_sell = False
 
                 # 매도여부 판단
                 if time_to_sell:
                     target_price = get_target_price_to_sell(ohlcv_candle2, sell_price_policy)
                     if current_price <= target_price:
-                        sell_procedure(symbol, current_price)
+                        sell_procedure(mark="sell_on_fall", symbol_param=symbol, current_price_param=current_price)
                         time_to_sell = False
 
             # 종료 시점
@@ -391,7 +392,7 @@ def main():
                 if not is_closed:
                     # 종료시 매도조건이면
                     if sell_on_end:
-                        sell_procedure(symbol, current_price)
+                        sell_procedure(mark="sell_on_end", symbol_param=symbol, current_price_param=current_price)
                         time_to_sell = False
                         time.sleep(5)
 
