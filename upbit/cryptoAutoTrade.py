@@ -271,8 +271,9 @@ def sell_procedure(symbol_param, current_price_param, sell_rate=1):
     crypto = get_balance(symbol_param) * sell_rate
     total_krw = get_total_balance_krw_and_crypto_with_locked(market, current_price_param)
     log_and_notify(
-        "sell: 🐥🐥🐥🐥🐥🐥🐥🐥;current_price={};crypto={};crypto_balance={};total_krw={}"
+        "sell: 🐥🐥🐥🐥🐥🐥🐥🐥;market={};current_price={};crypto={};crypto_balance={};total_krw={}"
         .format(
+            market,
             human_readable(current_price_param),
             crypto,
             human_readable(current_price_param * crypto),
