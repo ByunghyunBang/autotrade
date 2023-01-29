@@ -120,7 +120,7 @@ def start_log():
     )
 
     if debug_settings.trading_enabled:
-        log_and_notify(log_str)
+        log(log_str)
     else:
         log(log_str)
 
@@ -262,7 +262,7 @@ def candle_begin_event():
     min_volume_to_buy = get_volume_to_buy(ohlcv_candle2, min_volume_to_buy, volume_k)
 
     start_log()
-    log_and_notify(
+    log(
         "candle begin: market={};current_price={};candle_open={};latest_krw={};{}"
         .format(
             market,
@@ -423,7 +423,7 @@ def main():
                     else:
                         diff_mark = "💀💀💀💀💀💀💀💀💀"
 
-                    log_and_notify(
+                    log(
                         "candle end: market={};balance={};earned={}({}%);{};******************************"
                         .format(
                             market,
