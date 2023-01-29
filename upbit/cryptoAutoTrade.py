@@ -406,7 +406,7 @@ def main():
             else:
                 if trading_status != TradingStatus.TIME_END:
                     # 종료시 매도조건이면
-                    if sell_on_end:
+                    if sell_on_end and (trading_status == TradingStatus.BOUGHT or trading_status == TradingStatus.MEET_EXPECTED_PRICE):
                         sell_procedure(mark="sell_on_end", symbol_param=symbol, current_price_param=current_price)
                         time_to_sell = False
                         time.sleep(5)
