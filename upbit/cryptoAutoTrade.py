@@ -347,19 +347,20 @@ def main():
                     target_price = get_target_price_to_buy(ohlcv_candle2)
                     if current_price >= target_price:
                         krw = get_balance("KRW")
+                        latest_buy_price = current_price
+                        expected_price = latest_buy_price * (1 + expected_rate_p / 100)
                         log_and_notify(
-                            "buy: 🦁🦁🦁🦁🦁🦁🦁🦁;market={};current_price={};target_price={};krw={}"
+                            "buy: 🦁🦁🦁🦁🦁🦁🦁🦁;market={};current_price={};target_price={};expected_price={};krw={}"
                             .format(
                                 market,
                                 human_readable(current_price),
                                 human_readable(target_price),
+                                human_readable(expected_price),
                                 human_readable(krw)
                             )
                         )
                         time_to_buy = False
                         trading_status = TradingStatus.BOUGHT
-                        latest_buy_price = current_price
-                        expected_price = latest_buy_price * (1 + expected_rate_p / 100)
                         if krw > 5000:
                             if debug_settings.trading_enabled:
                                 upbit.buy_market_order(market, krw * 0.9995)
