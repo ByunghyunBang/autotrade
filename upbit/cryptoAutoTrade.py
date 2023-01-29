@@ -369,10 +369,11 @@ def main():
                         trading_status = TradingStatus.MEET_EXPECTED_PRICE
                         top_price = current_price
                         log(
-                            "meet_expected_price: market={};current_price={}"
+                            "meet_expected_price: market={};current_price={},expected_price={}"
                             .format(
                                 market,
-                                human_readable(current_price)
+                                human_readable(current_price),
+                                human_readable(expected_price)
                             )
                         )
 
