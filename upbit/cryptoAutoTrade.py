@@ -319,7 +319,7 @@ def main():
         try:
             now = datetime.datetime.now()
             start_time = get_start_time(market)
-            end_time = start_time + time_delta - datetime.timedelta(seconds=10)
+            end_time = start_time + time_delta - datetime.timedelta(seconds=60)
             time_deadline_to_buy = start_time + time_delta * time_deadline_to_buy_p
 
             # 거래 가능 시간: 봉시작 ~ 봉종료 20초전
