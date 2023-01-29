@@ -95,13 +95,12 @@ def diff_percent(n):
 
 def clear_flags():
     global trading_status, meet_expected_price, time_to_partial_sell, emergency_sell, latest_buy_price
-    global is_frozen, frozen_time, partial_sell_done
+    global frozen_time, partial_sell_done
     trading_status = TradingStatus.INITIAL
     latest_buy_price = 0
     meet_expected_price = False
     time_to_partial_sell = None
     emergency_sell = False
-    is_frozen = False
     frozen_time = time.time()
     partial_sell_done = False
 
@@ -342,10 +341,6 @@ def main():
                         get_target_price_str()
                     )
                 )
-
-                # Freeze 상태이면 거래하지 않음
-                if is_frozen:
-                    continue
 
                 # 매수여부 판단
                 if trading_status == TradingStatus.READY_TO_BUY and volume >= min_volume_to_buy and (not sell_on_end or now < time_deadline_to_buy):
