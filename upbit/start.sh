@@ -30,9 +30,7 @@ nohup python3 -u cryptoAutoTrade.py --symbol=WAXP >> out-WAXP.log &
 nohup python3 -u cryptoAutoTrade.py --symbol=XTZ >> out-XTZ.log &
 nohup python3 -u cryptoAutoTrade.py --symbol=META --min_volume_to_buy=40000000 >> out-META.log &
 sleep 1
+nohup python3 -u cryptoAutoTrade.py --symbol=PUNDIX --min_volume_to_buy=5000000 >> out-PUNDIX.log &
 
-
-# PUNDIX
 # ANKR POLYX
-# META
 # ENJ
