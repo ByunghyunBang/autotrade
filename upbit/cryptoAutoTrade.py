@@ -95,15 +95,14 @@ def diff_percent(n):
 
 def clear_flags():
     global trading_status, meet_expected_price, time_to_partial_sell, emergency_sell, latest_buy_price
-    global is_frozen, frozen_time, is_closed, partial_sell_done
-    trading_status = TradingStatus.DO_NOT_BUY
+    global is_frozen, frozen_time, partial_sell_done
+    trading_status = TradingStatus.INITIAL
     latest_buy_price = 0
     meet_expected_price = False
     time_to_partial_sell = None
     emergency_sell = False
     is_frozen = False
     frozen_time = time.time()
-    is_closed = False
     partial_sell_done = False
 
 
@@ -227,19 +226,18 @@ upbit = pyupbit.Upbit(access, secret)
 
 
 class TradingStatus(Enum):
-    DO_NOT_BUY = 1
+    INITIAL = 1
     READY_TO_BUY = 2
     BOUGHT = 3
     MEET_EXPECTED_PRICE = 4
     DONE = 5
+    TIME_END = 6
 
 
 # 자동매매 시작
 clear_flags()
 status = load_status()
-is_closed = True
 latest_buy_price = 0
-trading_status = TradingStatus.DO_NOT_BUY
 
 
 def candle_begin_event():
@@ -258,7 +256,7 @@ def candle_begin_event():
     if time_to_buy:
         trading_status = TradingStatus.READY_TO_BUY
     else:
-        trading_status = TradingStatus.DO_NOT_BUY
+        trading_status = TradingStatus.BOUGHT
     time_to_sell = krw_balance < crypto_balance_in_krw
     target_price_to_buy = get_target_price_to_buy(ohlcv_candle2)
     target_price_to_sell = get_target_price_to_sell(ohlcv_candle2, sell_price_policy)
@@ -312,7 +310,7 @@ def get_volume_to_buy(ohlcv_candle2, min_volume_to_buy, volume_k):
 
 
 def main():
-    global is_closed, latest_buy_price, time_to_buy, time_to_sell
+    global latest_buy_price, time_to_buy, time_to_sell
     global trading_status
     global meet_expected_price
     while True:
@@ -329,10 +327,9 @@ def main():
                 current_price = get_current_price(market)
                 volume = ohlcv_candle2.iloc[1]['volume']
 
-                if is_closed:
+                if trading_status == TradingStatus.INITIAL or trading_status == TradingStatus.TIME_END:
                     clear_flags()
                     candle_begin_event()
-                    is_closed = False
 
                 log(
                     "(no-event) diff from current: market={};current_price={};volume={};min_volume_to_buy={};latest_buy_price={};{}"
@@ -410,7 +407,7 @@ def main():
 
             # 종료 시점
             else:
-                if not is_closed:
+                if trading_status != TradingStatus.TIME_END:
                     # 종료시 매도조건이면
                     if sell_on_end:
                         sell_procedure(mark="sell_on_end", symbol_param=symbol, current_price_param=current_price)
@@ -441,7 +438,7 @@ def main():
                         )
                     )
                     latest_krw = total_krw
-                    is_closed = True
+                    trading_status = TradingStatus.TIME_END
                     status['latest_krw'] = latest_krw
                     save_status(status)
 
