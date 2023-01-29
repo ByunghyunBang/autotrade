@@ -18,7 +18,7 @@ nohup python3 -u cryptoAutoTrade.py --symbol=LOOM >> out-LOOM.log &
 nohup python3 -u cryptoAutoTrade.py --symbol=MED >> out-MED.log &
 nohup python3 -u cryptoAutoTrade.py --symbol=MLK --min_volume_to_buy=10000000 >> out-MLK.log &
 sleep 1
-nohup python3 -u cryptoAutoTrade.py --symbol=OMG >> out-OMG.log &
+nohup python3 -u cryptoAutoTrade.py --symbol=OMG --min_volume_to_buy=500000 >> out-OMG.log &
 nohup python3 -u cryptoAutoTrade.py --symbol=REP --min_volume_to_buy=1000000 >> out-REP.log &
 nohup python3 -u cryptoAutoTrade.py --symbol=SOL --min_volume_to_buy=500000 >> out-SOL.log &
 sleep 1
