@@ -308,6 +308,18 @@ def get_volume_to_buy(ohlcv_candle2, min_volume_to_buy, volume_k):
     return min_volume_to_buy
 
 
+def log_earned(current_price, latest_buy_price):
+    earned = current_price - latest_buy_price
+    earned_rate = (current_price / latest_buy_price) * 100 - 100
+    log_and_notify(
+        "earned: {};earned_rate={}%"
+        .format(
+            human_readable(earned),
+            human_readable(earned_rate)
+        )
+    )
+
+
 def main():
     global latest_buy_price, time_to_buy, time_to_sell
     global trading_status
@@ -393,6 +405,7 @@ def main():
                         trading_status = TradingStatus.DONE
                         sell_procedure(mark="sell_on_expected", symbol_param=symbol, current_price_param=current_price)
                         time_to_sell = False
+                        log_earned(current_price, latest_buy_price)
 
                 # 매도여부 판단
                 if time_to_sell:
@@ -409,6 +422,7 @@ def main():
                     if sell_on_end and (trading_status == TradingStatus.BOUGHT or trading_status == TradingStatus.MEET_EXPECTED_PRICE):
                         sell_procedure(mark="sell_on_end", symbol_param=symbol, current_price_param=current_price)
                         time_to_sell = False
+                        log_earned(current_price, latest_buy_price)
                         time.sleep(5)
 
                     # 현재 잔액 로그
