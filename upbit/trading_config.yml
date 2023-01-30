@@ -11,7 +11,7 @@
 
 symbol: "DOGE"
 candle_interval: "minute60"
-k: 1
+k: 0.7
 volume_k: 1.5
 min_diff_price_to_buy: 0.5
 expected_rate_p: 2 # 익절 기준 (%기준)
