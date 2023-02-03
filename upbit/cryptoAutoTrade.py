@@ -312,8 +312,9 @@ def log_earned(current_price, latest_buy_price):
     earned = current_price - latest_buy_price
     earned_rate = (current_price / latest_buy_price) * 100 - 100
     log_and_notify(
-        "earned: {};earned_rate={}%"
+        "earned: market={};diff={};earned_rate={}%"
         .format(
+            market,
             human_readable(earned),
             human_readable(earned_rate)
         )
