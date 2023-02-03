@@ -94,11 +94,10 @@ def diff_percent(n):
 
 
 def clear_flags():
-    global trading_status, meet_expected_price, time_to_partial_sell, emergency_sell, latest_buy_price
+    global trading_status, time_to_partial_sell, emergency_sell, latest_buy_price
     global frozen_time, partial_sell_done
     trading_status = TradingStatus.INITIAL
     latest_buy_price = 0
-    meet_expected_price = False
     time_to_partial_sell = None
     emergency_sell = False
     frozen_time = time.time()
@@ -245,6 +244,7 @@ def candle_begin_event():
     global time_to_buy, time_to_sell, target_price_to_buy, target_price_to_sell
     global trading_status
     global min_volume_to_buy
+    global expected_price
     ohlcv_candle2 = pyupbit.get_ohlcv(market, interval=candle_interval, count=2)
     current_price = get_current_price(market)
     candle_open = get_candle_open(ohlcv_candle2)
@@ -256,6 +256,7 @@ def candle_begin_event():
         trading_status = TradingStatus.READY_TO_BUY
     else:
         trading_status = TradingStatus.BOUGHT
+        expected_price = None
     time_to_sell = krw_balance < crypto_balance_in_krw
     target_price_to_buy = get_target_price_to_buy(ohlcv_candle2)
     target_price_to_sell = get_target_price_to_sell(ohlcv_candle2, sell_price_policy)
@@ -324,7 +325,6 @@ def log_earned(current_price, latest_buy_price):
 def main():
     global latest_buy_price, time_to_buy, time_to_sell
     global trading_status
-    global meet_expected_price
     while True:
         try:
             now = datetime.datetime.now()
@@ -379,7 +379,7 @@ def main():
                                 upbit.buy_market_order(market, krw * 0.9995)
 
                 if trading_status == TradingStatus.BOUGHT:
-                    if current_price >= expected_price:
+                    if expected_price is not None and current_price >= expected_price:
                         trading_status = TradingStatus.MEET_EXPECTED_PRICE
                         top_price = current_price
                         log(
