@@ -1,4 +1,4 @@
-nohup python3 -u cryptoAutoTrade.py --symbol=1INCH >> out-1INCH.log &
+nohup python3 -u cryptoAutoTrade.py --symbol=1INCH --min_volume_to_buy=500000 >> out-1INCH.log &
 nohup python3 -u cryptoAutoTrade.py --symbol=AHT >> out-AHT.log &
 nohup python3 -u cryptoAutoTrade.py --symbol=APT --min_volume_to_buy=2000000 >> out-APT.log &
 sleep 1
