@@ -375,7 +375,7 @@ def main():
                         )
                         time_to_buy = False
 
-                    if trading_status == TradingStatus.READY_TO_BUY and current_price >= target_price:
+                    elif current_price >= target_price:
                         krw = get_balance("KRW")
                         latest_buy_price = current_price
                         expected_price = latest_buy_price * (1 + expected_rate_p / 100)
