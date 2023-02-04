@@ -215,6 +215,7 @@ def load_config():
 # 변수 선언
 market = None
 sell_price_policy = None
+buy_price_tollerance = 0.01 # 매수조건 만족시점에 현재가가 목표가보다 너무 높으면 매수하지 않음
 
 # 각종 설정
 load_config()
@@ -324,7 +325,7 @@ def log_earned(current_price, latest_buy_price):
 
 def main():
     global latest_buy_price, time_to_buy, time_to_sell
-    global trading_status
+    global trading_status, expected_price
     while True:
         try:
             now = datetime.datetime.now()
@@ -358,13 +359,13 @@ def main():
                 # 매수여부 판단
                 if trading_status == TradingStatus.READY_TO_BUY and volume >= min_volume_to_buy and (not sell_on_end or now < time_deadline_to_buy):
                     target_price = get_target_price_to_buy(ohlcv_candle2)
-                    if current_price >= target_price:
-                        krw = get_balance("KRW")
-                        latest_buy_price = current_price
-                        expected_price = latest_buy_price * (1 + expected_rate_p / 100)
+                    if current_price >= target_price * (1 + buy_price_tollerance):
+                        trading_status = TradingStatus.DONE
+                        buy_mark = "cannot buy (target_price is too high):"
                         log_and_notify(
-                            "buy: 🦁🦁🦁🦁🦁🦁🦁🦁;market={};current_price={};target_price={};expected_price={};krw={}"
+                            "{};market={};current_price={};target_price={};expected_price={};krw={}"
                             .format(
+                                buy_mark,
                                 market,
                                 human_readable(current_price),
                                 human_readable(target_price),
@@ -373,10 +374,31 @@ def main():
                             )
                         )
                         time_to_buy = False
+
+                    if current_price >= target_price:
+                        krw = get_balance("KRW")
+                        latest_buy_price = current_price
+                        expected_price = latest_buy_price * (1 + expected_rate_p / 100)
                         trading_status = TradingStatus.BOUGHT
                         if krw > 5000:
+                            buy_mark = "buy: 🦁🦁🦁🦁🦁🦁🦁🦁"
                             if debug_settings.trading_enabled:
                                 upbit.buy_market_order(market, krw * 0.9995)
+                        else:
+                            buy_mark = "cannot buy (no money):"
+
+                        log_and_notify(
+                            "{};market={};current_price={};target_price={};expected_price={};krw={}"
+                            .format(
+                                buy_mark,
+                                market,
+                                human_readable(current_price),
+                                human_readable(target_price),
+                                human_readable(expected_price),
+                                human_readable(krw)
+                            )
+                        )
+                        time_to_buy = False
 
                 if trading_status == TradingStatus.BOUGHT:
                     if expected_price is not None and current_price >= expected_price:
