@@ -285,11 +285,15 @@ def get_target_price_str():
         return "target_price=N/A"
 
 
-def sell_procedure(mark="sell", symbol_param="", current_price_param=0, sell_rate=1, earned_message="N/A"):
+def sell_procedure(
+        mark="sell", symbol_param="", current_price_param=0, sell_rate=1, earned_message="N/A", earned_mark=""
+):
     crypto = get_balance(symbol_param) * sell_rate
     total_krw = get_total_balance_krw_and_crypto_with_locked(market, current_price_param)
+    if crypto == 0:
+        earned_mark = ""
     log_and_notify(
-        "{}: 🐼🐼🐼🐼🐼🐼🐼🐼;market={};current_price={};crypto={};crypto_balance={};total_krw={};earned={}"
+        "{}: 🐼🐼🐼🐼🐼🐼🐼🐼;market={};current_price={};crypto={};crypto_balance={};total_krw={};{}{}"
         .format(
             mark,
             market,
@@ -297,7 +301,8 @@ def sell_procedure(mark="sell", symbol_param="", current_price_param=0, sell_rat
             crypto,
             human_readable(current_price_param * crypto),
             human_readable(total_krw),
-            earned_message
+            earned_message,
+            earned_mark
         )
     )
     if crypto > 0.00008:
@@ -311,7 +316,7 @@ def get_volume_to_buy(ohlcv_candle2, min_volume_to_buy, volume_k):
     return min_volume_to_buy
 
 
-def earned_log_message(current_price, latest_buy_price):
+def earned_log_message_and_diff_mark(current_price, latest_buy_price):
     if latest_buy_price is None or latest_buy_price == 0:
         return
     earned = current_price - latest_buy_price
@@ -322,11 +327,10 @@ def earned_log_message(current_price, latest_buy_price):
         diff_mark = "️;💀💀💀💀💀💀💀💀💀"
     else:
         diff_mark = ""
-    return "diff={};earned_rate={}%{}".format(
+    return "diff={};earned_rate={}%".format(
             human_readable(earned),
-            human_readable(earned_rate),
-            diff_mark
-        )
+            human_readable(earned_rate)
+        ), diff_mark
 
 
 def main():
@@ -434,8 +438,8 @@ def main():
                         top_price = current_price
                     elif current_price < top_price * (1 - 0.005): # 최고점 대비 0.5% 하락시점에 매도
                         trading_status = TradingStatus.DONE
-                        earned_message = earned_log_message(current_price, latest_buy_price)
-                        sell_procedure(mark="sell_on_expected", symbol_param=symbol, current_price_param=current_price, earned_message=earned_message)
+                        earned_message, diff_mark = earned_log_message_and_diff_mark(current_price, latest_buy_price)
+                        sell_procedure(mark="sell_on_expected", symbol_param=symbol, current_price_param=current_price, earned_message=earned_message, earned_mark=diff_mark)
                         time_to_sell = False
 
 
@@ -453,8 +457,8 @@ def main():
                     # 종료시 매도조건이면
                     if sell_on_end and (trading_status == TradingStatus.BOUGHT or trading_status == TradingStatus.MEET_EXPECTED_PRICE):
                         trading_status = TradingStatus.DONE
-                        earned_message = earned_log_message(current_price, latest_buy_price)
-                        sell_procedure(mark="sell_on_end", symbol_param=symbol, current_price_param=current_price, earned_message=earned_message)
+                        earned_message, diff_mark = earned_log_message_and_diff_mark(current_price, latest_buy_price)
+                        sell_procedure(mark="sell_on_end", symbol_param=symbol, current_price_param=current_price, earned_message=earned_message, earned_mark=diff_mark)
                         time_to_sell = False
                         time.sleep(5)
 
