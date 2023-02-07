@@ -324,7 +324,7 @@ def earned_log_message_and_diff_mark(current_price, latest_buy_price):
     if earned > 0:
         diff_mark = "️;❤️❤️❤️❤️❤️❤️❤️❤️"
     elif earned < 0:
-        diff_mark = "️;💀💀💀💀💀💀💀💀💀"
+        diff_mark = "️;☠️☠️☠️☠️☠️☠️☠️☠️"
     else:
         diff_mark = ""
     return "diff={};earned_rate={}%".format(
