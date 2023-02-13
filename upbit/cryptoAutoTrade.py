@@ -374,13 +374,12 @@ def main():
                         trading_status = TradingStatus.DONE
                         buy_mark = "cannot buy (target_price is too high):"
                         log_and_notify(
-                            "{};market={};current_price={};target_price={};expected_price={};krw={}"
+                            "{};market={};current_price={};target_price={};krw={}"
                             .format(
                                 buy_mark,
                                 market,
                                 human_readable(current_price),
                                 human_readable(target_price),
-                                human_readable(expected_price),
                                 human_readable(krw)
                             )
                         )
